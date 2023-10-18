@@ -2,7 +2,7 @@ import { Router, createCors, createResponse, error, json, text } from "itty-rout
 import { SITES, Site } from "./const";
 import { buildClient, getClient } from "./drizzle/client";
 import { TestResultCache } from "./cache/TestResults";
-import { serverTable } from "./drizzle/schema";
+import { serverTable, testerTable } from "./drizzle/schema";
 import { eq } from "drizzle-orm";
 import { isIPv4 } from "is-ip";
 
@@ -18,6 +18,22 @@ const testResultsBySiteCache: Record<Site, TestResultCache> = {
 
 const { preflight, corsify } = createCors();
 
+const badJson = (status = 404) => {
+    return json({
+        success: false,
+        data: null
+    }, {
+        status
+    });
+};
+
+const goodJson = <T>(data: T) => {
+    return json({
+        success: true,
+        data
+    });
+};
+
 const buildRouter = () => {
     const router = Router();
 
@@ -27,29 +43,16 @@ const buildRouter = () => {
             const site = params.site as Site;
 
             if (!(SITES.includes(site))) {
-                return json({
-                    success: false,
-                    data: null
-                }, {
-                    status: 400
-                });
+                return badJson(400);
             }
 
-            return json({
-                success: true,
-                data: await testResultsBySiteCache[site].get()
-            });
+            return goodJson(await testResultsBySiteCache[site].get());
         })
         .get("/api/server/:ip", async ({ params }) => {
             const ip = params.ip;
 
             if (!isIPv4(ip)) {
-                return json({
-                    success: false,
-                    data: null
-                }, {
-                    status: 400
-                });
+                return badJson(400);
             }
 
             const db = getClient();
@@ -63,47 +66,30 @@ const buildRouter = () => {
             });
 
             if (!data) {
-                return json({
-                    success: false,
-                    data: null
-                }, {
-                    status: 404
-                });
+                return badJson(404);
             }
 
-            return json({
-                success: true,
-                data
-            });
+            return goodJson(data);
         })
         .get("/api/server/:ip/config", async ({ params }) => {
             const ip = params.ip;
 
             if (!isIPv4(ip)) {
-                return json({
-                    success: false,
-                    data: null
-                }, {
-                    status: 400
-                });
+                return badJson(400);
             }
             
             const db = getClient();
 
             const data = await db.query.serverTable.findFirst({
                 columns: {
+                    ip: true,
                     config: true
                 },
                 where: eq(serverTable.ip, ip)
             });
 
             if (!data) {
-                return json({
-                    success: false,
-                    data: null
-                }, {
-                    status: 404
-                });
+                return badJson(404);
             }
 
             const generateFileName = () => {
@@ -125,6 +111,25 @@ const buildRouter = () => {
             });
         }
         )
+        .get("/api/tester/:id", async ({ params }) => {
+            const id = params.id;
+
+            if (!/^\d+$/.test(id)) {
+                return badJson(400);
+            }
+
+            const client = getClient();
+
+            const tester = await client.query.testerTable.findFirst({
+                where: eq(testerTable.id, parseInt(id))
+            });
+
+            if (!tester) {
+                return badJson(404);
+            }
+
+            return goodJson(tester);
+        })
         .all("*", () => {
             return text("OwO?", {
                 status: 404
