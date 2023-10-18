@@ -4,7 +4,7 @@
     import IconButton, { Icon } from "@smui/icon-button";
     import Snackbar, { Actions, Label } from "@smui/snackbar";
     import type { SiteResults } from "./types/SiteAPIResponse";
-    import { HOST } from "./stores";
+    import { HOST } from "./const";
     import type { ServerAPIResponse } from "./types/ServerAPIResponse";
 
     export let result: SiteResults[0];

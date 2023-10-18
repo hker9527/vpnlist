@@ -3,7 +3,7 @@
 	import Server from "~/lib/Server.svelte";
 	import Accordion from "@smui-extra/accordion";
     import type { SiteAPIResponse, SiteResults } from "~/lib/types/SiteAPIResponse";
-    import { HOST } from "~/lib/stores";
+    import { HOST } from "~/lib/const";
 
 
 	let siteResults: SiteResults;
