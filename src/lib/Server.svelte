@@ -3,11 +3,11 @@
     import Button from "@smui/button";
     import IconButton, { Icon } from "@smui/icon-button";
     import Snackbar, { Actions, Label } from "@smui/snackbar";
-    import type { SiteResults } from "./types/SiteAPIResponse";
     import { HOST } from "./const";
-    import type { ServerAPIResponse } from "./types/ServerAPIResponse";
+    import type { SiteResult } from "./types/api/SiteAPIResponse";
+    import { ZServerAPIResponse, type ServerResult } from "./types/api/ServerAPIResponse";
 
-    export let result: SiteResults[0];
+    export let result: SiteResult[0];
 
     let panelOpen = false;
     let snackbar: Snackbar;
@@ -15,30 +15,57 @@
     const country2emoji = (country: string) => {
         const codePoints = country.toUpperCase().split("").map((char) => 127397 + char.charCodeAt(0));
         return String.fromCodePoint(...codePoints);
-    }
+    };
+
     const formatIP = (ip: string) => {
         const [a, b, c, d] = ip.split(".");
         return `${a.padStart(3, "0")}.${b.padStart(3, " ")}.${c.padStart(3, " ")}.${d.padStart(3, " ")}`;
     };
 
-    const download = async () => {
-        const response = await fetch(`${HOST}/api/server/${result.server.ip}`)
-        .then(async (res) => await res.json() as ServerAPIResponse);
+    let serverResult: ServerResult;
 
-        if (response.success) {
-            // Trigger download
-            const a = document.createElement("a");
-            a.href = `data:application/octet-stream,${encodeURIComponent(response.data.config)}`;
-            a.download = `${result.server.ip}.ovpn`;
-            a.click();
+    const fetchServer = async () => {
+        const res = await fetch(`${HOST}/api/server/${result.server.ip}`);
+        const json = await res.json();
+        if (ZServerAPIResponse.check(json)) {
+            if (json.success) {
+                serverResult = json.data;
+            }
+        } else {
+            alert(ZServerAPIResponse.reason(json));
         }
-    }
+    };    
+    
+    const formatTimeDiff = (from: number) => {
+        const diff = Date.now() - from;
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        if (days > 0) {
+            return `${days} day${days > 1 ? "s" : ""} ago`;
+        } else if (hours > 0) {
+            return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+        } else if (minutes > 0) {
+            return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+        } else if (seconds > 0) {
+            return `${seconds} second${seconds > 1 ? "s" : ""} ago`;
+        } else {
+            return "Just now";
+        }
+    };
+
+    const download = async () => {
+        const a = document.createElement("a");
+        a.href = `${HOST}/api/server/${result.server.ip}/config`;
+        a.click();
+    };
 </script>
 
 <main>
-    <Panel bind:open={panelOpen}>
+    <Panel on:click={fetchServer} bind:open={panelOpen}>
         <Header>
-            <span class="country">{country2emoji(result.server.country)}</span>
+            <span class="country" title={result.server.country}>{country2emoji(result.server.country)}</span>
             <span class="ip">{formatIP(result.server.ip)}</span>
             <span class="duration">{result.result.duration}ms</span>
             <IconButton slot="icon" toggle pressed={panelOpen}>
@@ -47,13 +74,24 @@
             </IconButton>
         </Header>
         <Content>
-            <div>Tested by: {result.tester}</div>
-            <div>Tested at: {new Date(result.result.timestamp).toLocaleString()}</div>
+            {#if serverResult}
+                <div>Tested by: {result.tester}</div>
+                <div>Tested at: {new Date(result.result.timestamp).toLocaleString()} ({formatTimeDiff(result.result.timestamp)})</div>
+                <div>Server location: {serverResult.country} {serverResult.lat},{serverResult.lon}</div>
+                <div>Server speed: {Math.round(serverResult.speed * 100) / 100} Mbps</div>
+            {:else}
+                <div class="loading">
+                    <div class="loading__icon"></div>
+                    <div class="loading__text">Loading...</div>
+                </div>
+            {/if}
             <Button on:click={() => {snackbar.open(); download()}} variant="raised">Download</Button>
         </Content>
     </Panel>
     <Snackbar bind:this={snackbar}>
-        <Label>Downloading...</Label>
+        <Label>
+            Downloading... If nothing happens, click <a href={`${HOST}/api/server/${result.server.ip}/config`}>here</a>.
+        </Label>
         <Actions>
             <IconButton class="material-icons">close</IconButton>
         </Actions>

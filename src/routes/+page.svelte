@@ -2,17 +2,20 @@
     import { onMount } from "svelte";
 	import Server from "~/lib/Server.svelte";
 	import Accordion from "@smui-extra/accordion";
-    import type { SiteAPIResponse, SiteResults } from "~/lib/types/SiteAPIResponse";
     import { HOST } from "~/lib/const";
+    import { ZSiteAPIResponse, type SiteResult } from "~/lib/types/api/SiteAPIResponse";
 
-
-	let siteResults: SiteResults;
+	let siteResult: SiteResult;
 	
 	onMount(async () => {
 		fetch(`${HOST}/api/site/uma`).then(async (res) => {
-			const json = await res.json() as SiteAPIResponse;
-			if (json.success) {
-				siteResults = json.data;
+			const json = await res.json()
+			if (ZSiteAPIResponse.check(json)) {
+				if (json.success) {
+					siteResult = json.data;
+				}
+			} else {
+				alert(ZSiteAPIResponse.reason(json));
 			}
 		});
 	});
@@ -20,9 +23,9 @@
 
 <main>
     <div class="accordion-container">
-		{#if siteResults}
+		{#if siteResult}
 			<Accordion multiple>
-				{#each siteResults as result}
+				{#each siteResult as result}
 					<Server result={result} />
 				{/each}
 			</Accordion>				
