@@ -19,7 +19,7 @@
 
     const formatIP = (ip: string) => {
         const [a, b, c, d] = ip.split(".");
-        return `${a.padStart(3, "0")}.${b.padStart(3, " ")}.${c.padStart(3, " ")}.${d.padStart(3, " ")}`;
+        return `${a.padStart(3, " ")}.${b.padStart(3, " ")}.${c.padStart(3, " ")}.${d.padStart(3, " ")}`;
     };
 
     let serverResult: ServerResult;
