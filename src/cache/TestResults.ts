@@ -57,6 +57,7 @@ export class TestResultCache extends Cache<TestResultBySite[]> {
                         r1.duration > 0
                         AND r1.testerId = 3
                         AND r1.site = ${this.site}
+                        AND r1.timestamp > ${Date.now() - 1000 * 60 * 60 * 24}
                     GROUP BY ip
                 ) AS subquery
                 ON r.ip = subquery.ip
