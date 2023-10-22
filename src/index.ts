@@ -1,10 +1,10 @@
-import { Router, createCors, createResponse, error, json, text } from "itty-router";
-import { SITES, Site } from "./const";
-import { buildClient, getClient } from "./drizzle/client";
-import { TestResultCache } from "./cache/TestResults";
-import { serverTable, testerTable } from "./drizzle/schema";
 import { eq } from "drizzle-orm";
 import { isIPv4 } from "is-ip";
+import { Router, createCors, createResponse, error, json, text } from "itty-router";
+import { TestResultCache } from "./cache/TestResults";
+import { PATCH, SITES, Site, VARIANTS } from "./const";
+import { buildClient, getClient } from "./drizzle/client";
+import { serverTable, testerTable } from "./drizzle/schema";
 
 export interface Env {
     LIBSQL_DB_URL: string;
@@ -71,13 +71,18 @@ const buildRouter = () => {
 
             return goodJson(data);
         })
-        .get("/api/server/:ip/config", async ({ params }) => {
+        .get("/api/server/:ip/config", async ({ params, query }) => {
             const ip = params.ip;
+            const { variant, split } = query;
 
-            if (!isIPv4(ip)) {
+            if (
+                !isIPv4(ip)
+                || typeof variant === "string" && !VARIANTS.includes(variant) || Array.isArray(variant)
+                || typeof split === "string" && !["true", "false"].includes(split) || Array.isArray(split)
+            ) {
                 return badJson(400);
             }
-            
+
             const db = getClient();
 
             const data = await db.query.serverTable.findFirst({
@@ -104,7 +109,18 @@ const buildRouter = () => {
                 return `NasuVPN-${year}-${month}-${date}-${hour}-${minute}-${second}-${data.ip}.ovpn`;
             };
 
-            return createResponse("application/x-openvpn-profile")(data.config, {
+            let config = data.config;
+            
+            if (variant === "legacy") {
+                // Comment out line starts with "data-ciphers"
+                config = config.replace(/^data-ciphers.+/m, "# $&");
+            }
+            
+            if (split === "true") {
+                config = `${config}${PATCH}`;
+            }
+
+            return createResponse("application/x-openvpn-profile")(config, {
                 headers: {
                     "Content-Disposition": `attachment; filename="${generateFileName()}"`
                 }
