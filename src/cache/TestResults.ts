@@ -69,47 +69,19 @@ export class TestResultCache extends Cache<TestResultBySite[]> {
                 LIMIT 50;         
             `);
 
-            this.data = await statement.execute().then((rows) => {
-                return rows.map((row) => ({
-                    result: {
-                        id: row.id,
-                        duration: row.duration,
-                        timestamp: row.timestamp
-                    },
-                    tester: row.testerId,
-                    server: {
-                        ip: row.ip,
-                        country: row.country,
-                        speed: row.speed
-                    }
-                }));
-            });
-            // this.data = await db
-            //     .select({
-            //         result: {
-            //             id: schema.resultTable.id,
-            //             duration: schema.resultTable.duration,
-            //             timestamp: schema.resultTable.timestamp
-            //         },
-            //         tester: schema.testerTable.id,
-            //         server: {
-            //             ip: schema.serverTable.ip,
-            //             country: schema.serverTable.country,
-            //             speed: schema.serverTable.speed,
-            //         }
-            //     })
-            //     .from(schema.resultTable)
-            //     .where(and(
-            //         eq(schema.resultTable.site, this.site),
-            //         gt(schema.resultTable.duration, 0),
-            //         gt(schema.resultTable.timestamp, Date.now() - 1000 * 60 * 60 * 24)
-            //     ))
-            //     .innerJoin(schema.serverTable, eq(schema.serverTable.ip, schema.resultTable.ip))
-            //     .innerJoin(schema.testerTable, eq(schema.testerTable.id, schema.resultTable.testerId))
-            //     .orderBy(schema.resultTable.duration)
-            //     .groupBy(schema.serverTable.ip)
-            //     .limit(50);
-            // this.data = db.
+            this.data = await statement.execute().then((rows) => rows.map((row) => ({
+                result: {
+                    id: row.id,
+                    duration: row.duration,
+                    timestamp: row.timestamp
+                },
+                tester: row.testerId,
+                server: {
+                    ip: row.ip,
+                    country: row.country,
+                    speed: row.speed
+                }
+            })));
             this.updatedAt = +new Date();
 
             return true;
