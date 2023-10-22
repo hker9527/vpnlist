@@ -66,7 +66,7 @@ export class TestResultCache extends Cache<TestResultBySite[]> {
                 JOIN server s ON r.ip = s.ip
                 JOIN tester t ON r.testerId = t.id
                 ORDER BY r.duration ASC
-                LIMIT 10;         
+                LIMIT 50;         
             `);
 
             this.data = await statement.execute().then((rows) => {
