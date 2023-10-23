@@ -4,38 +4,53 @@
     import IconButton, { Icon } from "@smui/icon-button";
     import Snackbar, { Actions, Label } from "@smui/snackbar";
     import { HOST } from "./const";
+    import {
+        ZServerAPIResponse,
+        type ServerResult,
+    } from "./types/api/ServerAPIResponse";
     import type { SiteResult } from "./types/api/SiteAPIResponse";
-    import { ZServerAPIResponse, type ServerResult } from "./types/api/ServerAPIResponse";
+    import type { Map } from "leaflet";
+    import "leaflet/dist/leaflet.css";
 
     export let result: SiteResult[0];
 
     let panelOpen = false;
     let snackbar: Snackbar;
+    let map: Map;
 
     const country2emoji = (country: string) => {
-        const codePoints = country.toUpperCase().split("").map((char) => 127397 + char.charCodeAt(0));
+        const codePoints = country
+            .toUpperCase()
+            .split("")
+            .map((char) => 127397 + char.charCodeAt(0));
         return String.fromCodePoint(...codePoints);
     };
 
     const formatIP = (ip: string) => {
         const [a, b, c, d] = ip.split(".");
-        return `${a.padStart(3, " ")}.${b.padStart(3, " ")}.${c.padStart(3, " ")}.${d.padStart(3, " ")}`;
+        return `${a.padStart(3, " ")}.${b.padStart(3, " ")}.${c.padStart(
+            3,
+            " "
+        )}.${d.padStart(3, " ")}`;
     };
 
     let serverResult: ServerResult;
 
     const fetchServer = async () => {
+        if (serverResult) return;
+
         const res = await fetch(`${HOST}/api/server/${result.server.ip}`);
         const json = await res.json();
         if (ZServerAPIResponse.check(json)) {
             if (json.success) {
                 serverResult = json.data;
+                await initMap();
             }
         } else {
             alert(ZServerAPIResponse.reason(json));
         }
-    };    
-    
+    };
+
     const formatTimeDiff = (from: number) => {
         const diff = Date.now() - from;
         const seconds = Math.floor(diff / 1000);
@@ -60,12 +75,35 @@
         a.href = `${HOST}/api/server/${result.server.ip}/config`;
         a.click();
     };
+
+    const initMap = async () => {
+        if (map) return;
+
+        const l = await import("leaflet");
+        const L = l.default;
+
+        map = L.map("map-" + result.server.ip, {
+            center: [serverResult.lat, serverResult.lon],
+            zoom: 12,
+            scrollWheelZoom: false
+        });
+
+        L.tileLayer("https://{s}.tile.osm.org/{z}/{x}/{y}.png", {
+            maxZoom: 18,
+            attribution:
+                'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        L.marker([serverResult.lat, serverResult.lon]).addTo(map);
+    };
 </script>
 
 <main>
     <Panel on:click={fetchServer} bind:open={panelOpen}>
         <Header>
-            <span class="country" title={result.server.country}>{country2emoji(result.server.country)}</span>
+            <span class="country" title={result.server.country}
+                >{country2emoji(result.server.country)}</span
+            >
             <span class="ip">{formatIP(result.server.ip)}</span>
             <span class="duration">{result.result.duration}ms</span>
             <IconButton slot="icon" toggle pressed={panelOpen}>
@@ -75,22 +113,39 @@
         </Header>
         <Content>
             {#if serverResult}
-                <div>Tested by: {result.tester}</div>
-                <div>Tested at: {new Date(result.result.timestamp).toLocaleString()} ({formatTimeDiff(result.result.timestamp)})</div>
-                <div>Server location: {serverResult.country} {serverResult.lat},{serverResult.lon}</div>
-                <div>Server speed: {Math.round(serverResult.speed * 100) / 100} Mbps</div>
+                <div>Tested by: {result.tester} at: {new Date(
+                        result.result.timestamp
+                    ).toLocaleString()} ({formatTimeDiff(
+                        result.result.timestamp
+                    )})
+                </div>
+                <div>
+                    ISP: TK
+                </div>
+                <div>
+                    Speed: {Math.round(serverResult.speed * 100) / 100} Mbps
+                </div>
             {:else}
                 <div class="loading">
-                    <div class="loading__icon"></div>
+                    <div class="loading__icon" />
                     <div class="loading__text">Loading...</div>
                 </div>
             {/if}
-            <Button on:click={() => {snackbar.open(); download()}} variant="raised">Download</Button>
+            <div id="map-{result.server.ip}" class="map my-2" />
+            <Button
+                on:click={() => {
+                    snackbar.open();
+                    download();
+                }}
+                variant="raised">Download</Button
+            >
         </Content>
     </Panel>
     <Snackbar bind:this={snackbar}>
         <Label>
-            Downloading... If nothing happens, click <a href={`${HOST}/api/server/${result.server.ip}/config`}>here</a>.
+            Downloading... If nothing happens, click <a
+                href={`${HOST}/api/server/${result.server.ip}/config`}>here</a
+            >.
         </Label>
         <Actions>
             <IconButton class="material-icons">close</IconButton>
@@ -99,12 +154,17 @@
 </main>
 
 <style>
-    span.country, span.ip {
+    span.country,
+    span.ip {
         padding-right: 2em;
     }
-    
+
     span.ip {
         font-family: monospace;
         white-space: pre;
+    }
+
+    div.map {
+        height: 200px;
     }
 </style>
