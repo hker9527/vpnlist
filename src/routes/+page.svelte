@@ -38,7 +38,7 @@
 
 		siteVariants[site] = "raised";
 
-		fetchResult(site);
+		await fetchResult(site);
 	}
 
 	onMount(async () => {
