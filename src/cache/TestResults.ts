@@ -61,7 +61,7 @@ export class TestResultCache extends Cache<TestResultBySite[]> {
                     GROUP BY ip
                 ) AS subquery
                 ON r.ip = subquery.ip
-                    AND r.site = "uma"
+                    AND r.site = ${this.site}
                     AND r.timestamp = subquery.max_timestamp
                 JOIN server s ON r.ip = s.ip
                 JOIN tester t ON r.testerId = t.id
