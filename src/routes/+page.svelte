@@ -9,7 +9,7 @@
     import { onMount } from "svelte";
 
 	let siteResult: SiteResult | null = null;
-	let siteVariants: Record<string, "raised" | "outlined"> = {
+	const siteVariants: Record<string, "raised" | "outlined"> = {
 		"uma": "raised",
 		"dmm": "outlined"
 	};
