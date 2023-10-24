@@ -84,7 +84,7 @@
 
         map = L.map("map-" + result.server.ip, {
             center: [serverResult.lat, serverResult.lon],
-            zoom: 12,
+            zoom: 6,
             scrollWheelZoom: false
         });
 
