@@ -4,7 +4,7 @@ export abstract class Cache<T> {
     private interval: number;
 
     public constructor(interval?: number) {
-        this.interval = interval ?? 1000 * 60 * 5;
+        this.interval = interval ?? 1000 * 60 * 60;
     }
 
     public shouldUpdate(): boolean {
