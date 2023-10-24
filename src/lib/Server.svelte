@@ -124,7 +124,8 @@
         </Header>
         <Content>
             {#if serverResult}
-                <div>Tested by: {result.tester} at: {new Date(
+                <div>
+                    Tested by: {result.tester} at: {new Date(
                         result.result.timestamp
                     ).toLocaleString()} ({formatTimeDiff(
                         result.result.timestamp
