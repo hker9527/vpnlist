@@ -7,7 +7,11 @@ const serverResultSchema = z.object({
     country: z.string(),
     lat: z.number(),
     lon: z.number(),
-    speed: z.number()
+    speed: z.number(),
+    asn: z.object({
+        id: z.string(),
+        name: z.string()
+    })
 });
 
 export const ZServerResult = new Zod(serverResultSchema);

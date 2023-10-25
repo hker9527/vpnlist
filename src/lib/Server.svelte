@@ -125,7 +125,7 @@
                     )})
                 </div>
                 <div>
-                    ISP: TK
+                    ISP: <a href="https://www.peeringdb.com/asn/{serverResult.asn.id.substring(2)}" target="_blank">{serverResult.asn.id}</a> {serverResult.asn.name}
                 </div>
                 <div>
                     Speed: {Math.round(serverResult.speed * 100) / 100} Mbps
