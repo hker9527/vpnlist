@@ -11,20 +11,13 @@
     import type { SiteResult } from "./types/api/SiteAPIResponse";
     import type { Map } from "leaflet";
     import "leaflet/dist/leaflet.css";
+    import { country2emoji } from "./emoji";
 
     export let result: SiteResult[0];
 
     let panelOpen = false;
     let snackbar: Snackbar;
     let map: Map;
-
-    const country2emoji = (country: string) => {
-        const codePoints = country
-            .toUpperCase()
-            .split("")
-            .map((char) => 127397 + char.charCodeAt(0));
-        return String.fromCodePoint(...codePoints);
-    };
 
     const formatIP = (ip: string) => {
         const [a, b, c, d] = ip.split(".");
