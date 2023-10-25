@@ -1,1 +1,1 @@
-export const HOST = "https://vpn-api.umamusume.pro";
+export const HOST = "https://api.umavpn.pro";
