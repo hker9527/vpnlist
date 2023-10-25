@@ -23,12 +23,14 @@
 
 	let topAppBar: TopAppBar;
 	let siteResult: {
-		value: SiteResult | null;
+		value: SiteResult["data"] | null;
+		updatedAt: number;
 		filters: {
 			country: string;
 		};
 	} = {
 		value: null,
+		updatedAt: 0,
 		filters: {
 			country: "",
 		},
@@ -46,7 +48,8 @@
 			const json = await res.json();
 			if (ZSiteAPIResponse.check(json)) {
 				if (json.success) {
-					siteResult.value = json.data;
+					siteResult.value = json.data.data;
+					siteResult.updatedAt = json.data.updatedAt;
 				}
 			} else {
 				alert(ZSiteAPIResponse.reason(json));
@@ -105,20 +108,27 @@
 			</DrawerContent>
 		</Drawer>
 		<AppContent class="app-content">
-			<Group class="my-4">
-				{#each Object.keys(siteVariants) as site}
-					<Button
-						variant={siteVariants[site]}
-						class="site-button"
-						on:click={() => onClick(site)}
-					>
-						<Label>
-							<img src="/{site}.png" alt="" />
-						</Label>
-					</Button>
-				{/each}
-			</Group>
 			<LayoutGrid>
+				<Cell span={6}>
+					<Group>
+						{#each Object.keys(siteVariants) as site}
+							<Button
+								variant={siteVariants[site]}
+								class="site-button"
+								on:click={() => onClick(site)}
+							>
+								<Label>
+									<img src="/{site}.png" alt="" />
+								</Label>
+							</Button>
+						{/each}
+					</Group>
+				</Cell>
+				<Cell span={6} class="d-flex align-items-center">
+					{#if siteResult.updatedAt > 0}
+						Updated at: {new Date(siteResult.updatedAt).toLocaleString()}
+					{/if}
+				</Cell>
 				<Cell span={4} class="d-flex align-items-center">
 					Filter by country
 				</Cell>
