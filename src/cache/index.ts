@@ -11,12 +11,23 @@ export abstract class Cache<T> {
         return !this.updatedAt || Date.now() - this.updatedAt > this.interval;
     }
 
-    public async get(): Promise<T | null> {
+    public async get(): Promise<{
+        data: T,
+        updatedAt: number
+     } | null> {
         if (this.shouldUpdate()) {
-            await this.update();
+            const status = await this.update();
+            
+            if (status) {
+                return {
+                    data: this.data!,
+                    updatedAt: this.updatedAt!
+                };
+            }
         }
 
-        return this.data;
+        return null;
+
     }
 
     public abstract update(): Promise<boolean>;
