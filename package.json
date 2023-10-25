@@ -12,8 +12,13 @@
   "devDependencies": {
     "@smui-extra/accordion": "^7.0.0-beta.15",
     "@smui/button": "^7.0.0-beta.15",
+    "@smui/drawer": "^7.0.0-beta.15",
     "@smui/icon-button": "^7.0.0-beta.15",
+    "@smui/layout-grid": "^7.0.0-beta.15",
+    "@smui/list": "^7.0.0-beta.15",
+    "@smui/select": "^7.0.0-beta.15",
     "@smui/snackbar": "^7.0.0-beta.15",
+    "@smui/top-app-bar": "^7.0.0-beta.15",
     "@sveltejs/adapter-auto": "^2.0.0",
     "@sveltejs/adapter-static": "^2.0.3",
     "@sveltejs/kit": "^1.20.4",
