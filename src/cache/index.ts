@@ -16,18 +16,20 @@ export abstract class Cache<T> {
         updatedAt: number
      } | null> {
         if (this.shouldUpdate()) {
-            const status = await this.update();
-            
-            if (status) {
-                return {
-                    data: this.data!,
-                    updatedAt: this.updatedAt!
-                };
+            const status = await this.update();   
+            if (!status) {
+                return null;
             }
         }
 
-        return null;
+        if (!this.data || !this.updatedAt) {
+            return null;
+        }
 
+        return {
+            data: this.data,
+            updatedAt: this.updatedAt
+        };
     }
 
     public abstract update(): Promise<boolean>;
