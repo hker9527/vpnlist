@@ -126,8 +126,7 @@ const buildRouter = () => {
                     "Cache-Control": "public, max-age=86400"
                 }
             });
-        }
-        )
+        })
         .get("/api/tester/:id", async ({ params }) => {
             const id = params.id;
 
