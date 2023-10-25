@@ -4,7 +4,7 @@ import { Router, createCors, createResponse, error, json, text } from "itty-rout
 import { TestResultCache } from "./cache/TestResults";
 import { PATCH, SITES, Site, VARIANTS } from "./const";
 import { buildClient, getClient } from "./drizzle/client";
-import { serverTable, testerTable } from "./drizzle/schema";
+import { asnNameTable, asnTable, serverTable, testerTable } from "./drizzle/schema";
 
 export interface Env {
     LIBSQL_DB_URL: string;
@@ -57,13 +57,22 @@ const buildRouter = () => {
 
             const db = getClient();
 
-            const data = await db.query.serverTable.findFirst({
-                columns: {
-                    asnId: false,
-                    config: false
-                },
-                where: eq(serverTable.ip, ip)
-            });
+            const data = await db.select({
+                ip: serverTable.ip,
+                country: serverTable.country,
+                lat: serverTable.lat,
+                lon: serverTable.lon,
+                speed: serverTable.speed,
+                asn: {
+                    id: asnTable.id,
+                    name: asnNameTable.name
+                }
+            })
+                .from(serverTable)
+                .where(eq(serverTable.ip, ip))
+                .fullJoin(asnTable, eq(serverTable.asnId, asnTable.id))
+                .fullJoin(asnNameTable, eq(asnTable.asnNameId, asnNameTable.id))
+                .get();
 
             if (!data) {
                 return badJson(404);
@@ -110,12 +119,12 @@ const buildRouter = () => {
             };
 
             let config = data.config;
-            
+
             if (variant === "legacy") {
                 // Comment out line starts with "data-ciphers"
                 config = config.replace(/^data-ciphers.+/m, "# $&");
             }
-            
+
             if (split === "true") {
                 config = `${config}${PATCH}`;
             }
@@ -156,7 +165,7 @@ const buildRouter = () => {
 let router: ReturnType<typeof buildRouter>;
 
 export default {
-    fetch: async (request: Request, env: Env) => { 
+    fetch: async (request: Request, env: Env) => {
         buildClient(env.LIBSQL_DB_URL, env.LIBSQL_DB_AUTH_TOKEN);
 
         if (!router) {
