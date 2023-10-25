@@ -122,7 +122,8 @@ const buildRouter = () => {
 
             return createResponse("application/x-openvpn-profile")(config, {
                 headers: {
-                    "Content-Disposition": `attachment; filename="${generateFileName()}"`
+                    "Content-Disposition": `attachment; filename="${generateFileName()}"`,
+                    "Cache-Control": "public, max-age=86400"
                 }
             });
         }
