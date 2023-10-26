@@ -2,18 +2,20 @@
     import { Content, Header, Panel } from "@smui-extra/accordion";
     import Button from "@smui/button";
     import IconButton, { Icon } from "@smui/icon-button";
+    import Menu, { SelectionGroup, SelectionGroupIcon } from "@smui/menu";
     import Snackbar, { Actions, Label } from "@smui/snackbar";
+    import type { Map } from "leaflet";
+    import "leaflet/dist/leaflet.css";
     import { HOST } from "./const";
+    import { country2emoji } from "./emoji";
     import {
         ZServerAPIResponse,
         type ServerResult,
     } from "./types/api/ServerAPIResponse";
     import type { SiteResult } from "./types/api/SiteAPIResponse";
-    import type { Map } from "leaflet";
-    import "leaflet/dist/leaflet.css";
-    import { country2emoji } from "./emoji";
+    import List, { Item, PrimaryText, SecondaryText, Separator, Text } from "@smui/list";
 
-    export let result: SiteResult[0];
+    export let result: SiteResult["data"][0];
 
     let panelOpen = false;
     let snackbar: Snackbar;
@@ -63,10 +65,12 @@
         }
     };
 
-    const download = async () => {
-        const a = document.createElement("a");
-        a.href = `${HOST}/api/server/${result.server.ip}/config`;
-        a.click();
+    let variant = "current";
+    let split = false;
+    const getDownloadLink = () => {
+        return `${HOST}/api/server/${
+            result.server.ip
+        }/config?variant=${variant}${split ? "&split" : ""}`;
     };
 
     const initMap = async () => {
@@ -78,13 +82,13 @@
         map = L.map("map-" + result.server.ip, {
             center: [serverResult.lat, serverResult.lon],
             zoom: 6,
-            scrollWheelZoom: false
+            scrollWheelZoom: false,
         });
 
         L.tileLayer("https://{s}.tile.osm.org/{z}/{x}/{y}.png", {
             maxZoom: 18,
             attribution:
-                'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+                'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
         }).addTo(map);
 
         L.marker([serverResult.lat, serverResult.lon], {
@@ -100,6 +104,8 @@
             }),
         }).addTo(map);
     };
+
+    let menu: Menu;
 </script>
 
 <main>
@@ -125,7 +131,13 @@
                     )})
                 </div>
                 <div>
-                    ISP: <a href="https://www.peeringdb.com/asn/{serverResult.asn.id.substring(2)}" target="_blank">{serverResult.asn.id}</a> {serverResult.asn.name}
+                    ISP: <a
+                        href="https://www.peeringdb.com/asn/{serverResult.asn.id.substring(
+                            2
+                        )}"
+                        target="_blank">{serverResult.asn.id}</a
+                    >
+                    {serverResult.asn.name}
                 </div>
                 <div>
                     Speed: {Math.round(serverResult.speed * 100) / 100} Mbps
@@ -137,19 +149,92 @@
                 </div>
             {/if}
             <div id="map-{result.server.ip}" class="map my-2" />
-            <Button
-                on:click={() => {
-                    snackbar.open();
-                    download();
-                }}
-                variant="raised">Download</Button
-            >
+            <div>
+                <Button
+                    on:click={() => {
+                        // snackbar.open();
+                        // download();
+                        menu.setOpen(true);
+                    }}
+                    variant="raised">Download</Button
+                >
+                <Menu bind:this={menu}>
+                    <List>
+                        <SelectionGroup>
+                            {#each ["current", "legacy"] as _variant}
+                                <Item
+                                    on:SMUI:action={() => {
+                                        variant = _variant;
+                                    }}
+                                    selected={_variant === variant}
+                                >
+                                    <SelectionGroupIcon>
+                                        <i class="material-icons">check</i>
+                                    </SelectionGroupIcon>
+                                    <Text>
+                                        <PrimaryText>
+                                            {_variant === "current"
+                                                ? "Current"
+                                                : "Legacy"}
+                                        </PrimaryText>
+                                        <SecondaryText>
+                                            {_variant === "current"
+                                                ? "v2.6.0 or above"
+                                                : "below v2.6.0"}
+                                        </SecondaryText>
+                                    </Text>
+                                </Item>
+                            {/each}
+                        </SelectionGroup>
+                        <Separator />
+                        <SelectionGroup>
+                            {#each [false, true] as _split}
+                                <Item
+                                    on:SMUI:action={() => {
+                                        split = _split;
+                                    }}
+                                    selected={_split === split}
+                                >
+                                    <SelectionGroupIcon>
+                                        <i class="material-icons">check</i>
+                                    </SelectionGroupIcon>
+                                    <Text>
+                                        <PrimaryText>
+                                            {_split
+                                                ? "Split tunneling"
+                                                : "Original"}
+                                        </PrimaryText>
+                                        <SecondaryText>
+                                            {_split
+                                                ? "Only works on Windows"
+                                                : "Universal"}
+                                        </SecondaryText>
+                                    </Text>
+                                </Item>
+                            {/each}
+                        </SelectionGroup>
+                        <Separator />
+                        <Item on:SMUI:action={() => {
+                            snackbar.open();
+                            const link = getDownloadLink();
+                            const a = document.createElement("a");
+                            a.href = link;
+                            a.click();
+                        }}>
+                            <SelectionGroupIcon>
+                                <i class="material-icons">file_download</i>
+                            </SelectionGroupIcon>
+                            <Text>Download</Text>
+                        </Item>
+                    </List>
+                </Menu>
+            </div>
         </Content>
     </Panel>
     <Snackbar bind:this={snackbar}>
         <Label>
             Downloading... If nothing happens, click <a
-                href={`${HOST}/api/server/${result.server.ip}/config`}>here</a
+                href={getDownloadLink()}>here</a
             >.
         </Label>
         <Actions>
@@ -171,5 +256,6 @@
 
     div.map {
         height: 200px;
+        z-index: 0;
     }
 </style>
