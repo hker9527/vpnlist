@@ -86,8 +86,9 @@ const buildRouter = () => {
 
             if (
                 !isIPv4(ip)
-                || typeof variant === "string" && !VARIANTS.includes(variant) || Array.isArray(variant)
-                || typeof split === "string" && !["true", "false"].includes(split) || Array.isArray(split)
+                || typeof variant !== "string"
+                || typeof variant === "string" && !VARIANTS.includes(variant)
+                || !["string", "undefined"].includes(typeof split)
             ) {
                 return badJson(400);
             }
@@ -125,7 +126,7 @@ const buildRouter = () => {
                 config = config.replace(/^data-ciphers.+/m, "# $&");
             }
 
-            if (split === "true") {
+            if (typeof split !== "undefined") {
                 config = `${config}${PATCH}`;
             }
 
