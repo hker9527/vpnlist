@@ -129,10 +129,10 @@
 						Updated at: {new Date(siteResult.updatedAt).toLocaleString()}
 					{/if}
 				</Cell>
-				<Cell span={4} class="d-flex align-items-center">
+				<Cell spanDevices={{ desktop: 4, tablet: 3, phone: 2 }} class="d-flex align-items-center">
 					Filter by country
 				</Cell>
-				<Cell span={8}>
+				<Cell spanDevices={{ desktop: 8, tablet: 5, phone: 2 }}>
 					<Select
 						bind:value={siteResult.filters.country}
 						on:change={onChange}
