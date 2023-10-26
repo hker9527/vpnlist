@@ -116,7 +116,7 @@ const buildRouter = () => {
                 const minute = now.getMinutes();
                 const second = now.getSeconds();
 
-                return `NasuVPN-${ip}-${year}${month.toString().padStart(2, "0")}${date.toString().padStart(2, "0")}-${hour.toString().padStart(2, "0")}${minute.toString().padStart(2, "0")}${second.toString().padStart(2, "0")}-${variant == "current" ? "C" : "L"}${typeof split !== "undefined" ? "S" : "O"}.ovpn`;
+                return `NasuVPN-${year}${month.toString().padStart(2, "0")}${date.toString().padStart(2, "0")}-${hour.toString().padStart(2, "0")}${minute.toString().padStart(2, "0")}${second.toString().padStart(2, "0")}-${ip}-${variant == "current" ? "C" : "L"}${typeof split !== "undefined" ? "S" : "O"}.ovpn`;
             };
 
             let config = data.config;
