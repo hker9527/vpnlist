@@ -152,8 +152,6 @@
             <div>
                 <Button
                     on:click={() => {
-                        // snackbar.open();
-                        // download();
                         menu.setOpen(true);
                     }}
                     variant="raised">Download</Button
