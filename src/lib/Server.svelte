@@ -114,7 +114,7 @@
             <span class="country" title={result.server.country}
                 >{country2emoji(result.server.country)}</span
             >
-            <span class="ip">{formatIP(result.server.ip)}</span>
+            <span class="ip pr-2">{formatIP(result.server.ip)}</span>
             <span class="duration">{result.result.duration}ms</span>
             <IconButton slot="icon" toggle pressed={panelOpen}>
                 <Icon class="material-icons" on>expand_less</Icon>
@@ -242,11 +242,6 @@
 </main>
 
 <style>
-    span.country,
-    span.ip {
-        padding-right: 2em;
-    }
-
     span.ip {
         font-family: monospace;
         white-space: pre;
