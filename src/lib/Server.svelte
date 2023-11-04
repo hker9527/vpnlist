@@ -132,9 +132,7 @@
                 </div>
                 <div>
                     ISP: <a
-                        href="https://www.peeringdb.com/asn/{serverResult.asn.id.substring(
-                            2
-                        )}"
+                        href="https://ipinfo.io/{serverResult.asn.id}"
                         target="_blank">{serverResult.asn.id}</a
                     >
                     {serverResult.asn.name}
