@@ -151,6 +151,7 @@ const main = async () => {
 
         if (!result) {
             error("main", `Failed to initialize ${tester.constructor.name}`);
+            setTimeout(main, 60 * 1000);
             return;
         }
     }
@@ -160,6 +161,7 @@ const main = async () => {
 
     if (servers === null) {
         error("main", "Failed to update list");
+        setTimeout(main, 60 * 1000);
         return;
     }
 
