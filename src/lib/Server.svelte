@@ -222,6 +222,18 @@
                             </SelectionGroupIcon>
                             <Text>Download</Text>
                         </Item>
+                        <Item on:SMUI:action={() => {
+                            snackbar.open();
+                            const link = getDownloadLink();
+                            const a = document.createElement("a");
+                            a.href = `openvpn://import-profile/${link}`;
+                            a.click();
+                        }}>
+                            <SelectionGroupIcon>
+                                <i class="material-icons">android</i>
+                            </SelectionGroupIcon>
+                            <Text>Open in app</Text>
+                        </Item>
                     </List>
                 </Menu>
             </div>
