@@ -243,7 +243,7 @@
         <Label>
             Downloading... If nothing happens, click <a
                 href={getDownloadLink()}>here</a
-            >.
+            > to manually download.
         </Label>
         <Actions>
             <IconButton class="material-icons">close</IconButton>
