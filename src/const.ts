@@ -18,5 +18,7 @@ route api-umamusume.cygames.jp
 route prd-storage-umamusume.akamaized.net
 route prd-storage-app-umamusume.akamaized.net
 route prd-storage-game-umamusume.akamaized.net
+route prd-info-umamusume.akamaized.net
+
 route apidgp-gameplayer.games.dmm.com
 `.replaceAll("\n", "\r\n");
