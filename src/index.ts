@@ -142,63 +142,59 @@ const test = async (server: VPNGateServer) => {
     return ret;
 };
 
-const main = async () => {
-    log("main", "Initializing testers...");
+log("main", "Initializing testers...");
 
-    for (const tester of testers) {
-        debug("main", `Initializing ${tester.constructor.name}...`);
-        const result = await tester.init();
+for (const tester of testers) {
+    debug("main", `Initializing ${tester.constructor.name}...`);
+    const result = await tester.init();
 
-        if (!result) {
-            error("main", `Failed to initialize ${tester.constructor.name}`);
-            return;
+    if (!result) {
+        error("main", `Failed to initialize ${tester.constructor.name}`);
+        process.exit(1);
+    }
+}
+
+log("main", "Updating server list...");
+const servers = await fetchServers();
+
+if (servers === null) {
+    error("main", "Failed to update list");
+    process.exit(1);
+}
+
+let serverTested = 0;
+let serverSkipped = 0;
+
+log("main", `Testing ${servers.length} servers...`);
+for (const server of servers) {
+    try {
+        if (await checkedRecently(server.ip)) {
+            debug("main", `Skipping ${server.ip} because it was checked recently`);
+            serverSkipped++;
+            continue;
         }
-    }
 
-    log("main", "Updating server list...");
-    const servers = await fetchServers();
+        const result = await test(server);
 
-    if (servers === null) {
-        error("main", "Failed to update list");
-        return;
-    }
-
-    let serverTested = 0;
-    let serverSkipped = 0;
-
-    log("main", `Testing ${servers.length} servers...`);
-    for (const server of servers) {
-        try {
-            if (await checkedRecently(server.ip)) {
-                debug("main", `Skipping ${server.ip} because it was checked recently`);
-                serverSkipped++;
-                continue;
-            }
-
-            const result = await test(server);
-
-            if (result) {
-                await insertAsn({
-                    asn: result.asn
-                });
-                await insertServer({
-                    asnId: result.asn.id,
-                    server: result.server
-                });
-                await insertResults({
-                    ip: result.server.ip,
-                    results: result.results
-                });
-                await updateStatistic("serverTested", 1);
-                serverTested++;
-            }
-        } catch (e) {
-            error("main", e);
+        if (result) {
+            await insertAsn({
+                asn: result.asn
+            });
+            await insertServer({
+                asnId: result.asn.id,
+                server: result.server
+            });
+            await insertResults({
+                ip: result.server.ip,
+                results: result.results
+            });
+            await updateStatistic("serverTested", 1);
+            serverTested++;
         }
+    } catch (e) {
+        error("main", e);
     }
+}
 
-    log("main", `Tested ${serverTested} servers, skipped ${serverSkipped} servers`);
-    return;
-};
-
-await main();
+log("main", `Tested ${serverTested} servers, skipped ${serverSkipped} servers`);
+process.exit(0);
