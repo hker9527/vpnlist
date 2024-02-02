@@ -135,7 +135,11 @@ const test = async (server: VPNGateServer) => {
 
     debug("main", `Killing process ${proc.pid}`);
     Bun.spawnSync(["sudo", "kill", proc.pid.toString()]);
-    await proc.exited;
+    const exited = await Promise.race([proc.exited, timeoutPromise(5 * 1000)]);
+
+    if (exited === null) {
+        debug("main", `Failed to kill process ${proc.pid}`);
+    }
 
     debug("main", `Finished testing ${server.ip}`);
 
