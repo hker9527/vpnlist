@@ -158,6 +158,11 @@ for (const tester of testers) {
     }
 }
 
+setTimeout(() => {
+    log("main", "Exiting program after 45 minutes");
+    process.exit(1);
+}, 45 * 60 * 1000);
+
 log("main", "Updating server list...");
 const servers = await fetchServers();
 
