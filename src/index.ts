@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { isIPv4 } from "is-ip";
 import { Router, createCors, createResponse, error, json, text } from "itty-router";
 import { TestResultCache } from "./cache/TestResults";
@@ -155,6 +155,27 @@ const buildRouter = () => {
             }
 
             return goodJson(tester);
+        })
+        .get("/api/stat/:site/countries", async ({ params }) => {
+            const site = params.site as Site;
+
+            if (!(SITES.includes(site))) {
+                return badJson(400);
+            }
+
+            const client = getClient();
+
+            const data = await client.select({
+                country: serverTable.country,
+                success: sql`COUNT(CASE WHEN duration >= 0 THEN 1 END)`.as("success"),
+                fail: sql`COUNT(CASE WHEN duration < 0 THEN 1 END)`.as("fail")
+            })
+                .from(resultTable)
+                .innerJoin(serverTable, eq(resultTable.ip, serverTable.ip))
+                .where(eq(resultTable.site, site))
+                .groupBy(serverTable.country);
+
+            return goodJson(data);
         })
         .all("*", () => {
             return text("OwO?", {
