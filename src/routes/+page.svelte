@@ -1,27 +1,17 @@
 <script lang="ts">
 	import Accordion from "@smui-extra/accordion";
-	import Button, { Group, Icon, Label } from "@smui/button";
-	import Drawer, { AppContent, Content as DrawerContent } from "@smui/drawer";
-	import IconButton from "@smui/icon-button";
+	import Button, { Group, Label } from "@smui/button";
 	import LayoutGrid, { Cell } from "@smui/layout-grid";
-	import List, { Item, Text } from "@smui/list";
 	import Select, { Option } from "@smui/select";
-	import TopAppBar, {
-	    AutoAdjust,
-	    Row,
-	    Section,
-	    Title,
-	} from "@smui/top-app-bar";
 	import { onMount } from "svelte";
 	import Server from "~/lib/Server.svelte";
 	import { HOST } from "~/lib/const";
 	import { country2emoji } from "~/lib/emoji";
 	import {
-	    ZSiteAPIResponse,
-	    type SiteResult,
+		ZSiteAPIResponse,
+		type SiteResult,
 	} from "~/lib/types/api/SiteAPIResponse";
 
-	let topAppBar: TopAppBar;
 	let siteResult: {
 		value: SiteResult["data"] | null;
 		updatedAt: number;
@@ -77,105 +67,67 @@
 	const onChange = async () => {
 		await fetchResult(site);
 	};
-
-	let open = false;
 </script>
 
 <main>
-	<TopAppBar bind:this={topAppBar}>
-		<Row>
-			<Section>
-				<IconButton
-					class="material-icons"
-					on:click={() => (open = !open)}>menu</IconButton
-				>
-				<Title>NasuVPN Checker</Title>
-			</Section>
-		</Row>
-	</TopAppBar>
-	<AutoAdjust {topAppBar}>
-		<Drawer variant="modal" bind:open>
-			<DrawerContent>
-				<List>
-					<Item>
-						<Text>Nothing here yet...</Text>
-					</Item>
-					<Item href="https://www.google.com" target="_blank">
-						<Icon class="material-icons">link</Icon>
-						<Text>Go to Google</Text>
-					</Item>
-				</List>
-			</DrawerContent>
-		</Drawer>
-		<AppContent class="app-content">
-			<LayoutGrid>
-				<Cell span={6}>
-					<Group>
-						{#each Object.keys(siteVariants) as site}
-							<Button
-								variant={siteVariants[site]}
-								class="site-button"
-								on:click={() => onClick(site)}
-							>
-								<Label>
-									<img src="/{site}.png" alt="" />
-								</Label>
-							</Button>
-						{/each}
-					</Group>
-				</Cell>
-				<Cell span={6} class="d-flex align-items-center">
-					{#if siteResult.updatedAt > 0}
-						Updated at: {new Date(siteResult.updatedAt).toLocaleString()}
-					{/if}
-				</Cell>
-				<Cell spanDevices={{ desktop: 4, tablet: 3, phone: 2 }} class="d-flex align-items-center">
-					Filter by country
-				</Cell>
-				<Cell spanDevices={{ desktop: 8, tablet: 5, phone: 2 }}>
-					<Select
-						bind:value={siteResult.filters.country}
-						on:change={onChange}
-						class="w-100"
+	<LayoutGrid>
+		<Cell span={6}>
+			<Group>
+				{#each Object.keys(siteVariants) as site}
+					<Button
+						variant={siteVariants[site]}
+						class="site-button"
+						on:click={() => onClick(site)}
 					>
-						<Option value="" selected>🏳️ ----</Option>
-						{#if siteResult.value}
-							{#each [...new Set(siteResult.value.map((r) => r.server.country))] as country}
-								<Option value={country}
-									>{country2emoji(country)} {country}</Option
-								>
-							{/each}
-						{/if}
-					</Select>
-				</Cell>
-			</LayoutGrid>
-			<div class="accordion-container">
+						<Label>
+							<img src="/{site}.png" alt="" />
+						</Label>
+					</Button>
+				{/each}
+			</Group>
+		</Cell>
+		<Cell span={6} class="d-flex align-items-center">
+			{#if siteResult.updatedAt > 0}
+				Updated at: {new Date(siteResult.updatedAt).toLocaleString()}
+			{/if}
+		</Cell>
+		<Cell
+			spanDevices={{ desktop: 4, tablet: 3, phone: 2 }}
+			class="d-flex align-items-center"
+		>
+			Filter by country
+		</Cell>
+		<Cell spanDevices={{ desktop: 8, tablet: 5, phone: 2 }}>
+			<Select
+				bind:value={siteResult.filters.country}
+				on:change={onChange}
+				class="w-100"
+			>
+				<Option value="" selected>🏳️ ----</Option>
 				{#if siteResult.value}
-					<Accordion multiple>
-						{#each siteResult.value as result}
-							{#if siteResult.filters.country === "" || siteResult.filters.country === result.server.country}
-								<Server {result} />
-							{/if}
-						{/each}
-					</Accordion>
-				{:else}
-					<div class="loading">
-						<div class="loading__icon" />
-						<div class="loading__text">Loading...</div>
-					</div>
+					{#each [...new Set(siteResult.value.map((r) => r.server.country))] as country}
+						<Option value={country}
+							>{country2emoji(country)} {country}</Option
+						>
+					{/each}
 				{/if}
+			</Select>
+		</Cell>
+	</LayoutGrid>
+	<div class="accordion-container">
+		{#if siteResult.value}
+			<Accordion multiple>
+				{#each siteResult.value as result}
+					{#if siteResult.filters.country === "" || siteResult.filters.country === result.server.country}
+						<Server {result} />
+					{/if}
+				{/each}
+			</Accordion>
+		{:else}
+			<div class="loading">
+				<div class="loading__icon" />
+				<div class="loading__text">Loading...</div>
 			</div>
-		</AppContent>
-	</AutoAdjust>
+		{/if}
+	</div>
 </main>
-
-<style>
-	* :global(.app-content) {
-		max-width: 1000px;
-		margin: 0 auto !important;
-	}
-
-	* :global(.site-button) {
-		height: 48px;
-	}
-</style>
