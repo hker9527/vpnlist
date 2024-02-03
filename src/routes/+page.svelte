@@ -1,9 +1,8 @@
 <script lang="ts">
 	import Accordion from "@smui-extra/accordion";
-	import Button, { Group, Label } from "@smui/button";
-	import LayoutGrid, { Cell } from "@smui/layout-grid";
 	import Select, { Option } from "@smui/select";
 	import { onMount } from "svelte";
+	import SitePicker from "~/lib/SitePicker.svelte";
 	import Server from "~/lib/Server.svelte";
 	import { HOST } from "~/lib/const";
 	import { country2emoji } from "~/lib/emoji";
@@ -70,59 +69,52 @@
 </script>
 
 <main>
-	<LayoutGrid>
-		<Cell span={6}>
-			<Group>
-				{#each Object.keys(siteVariants) as site}
-					<Button
-						variant={siteVariants[site]}
-						class="site-button"
-						on:click={() => onClick(site)}
-					>
-						<Label>
-							<img src="/{site}.png" alt="" />
-						</Label>
-					</Button>
-				{/each}
-			</Group>
-		</Cell>
-		<Cell span={6} class="d-flex align-items-center">
-			{#if siteResult.updatedAt > 0}
-				Updated at: {new Date(siteResult.updatedAt).toLocaleString()}
-			{/if}
-		</Cell>
-		<Cell
-			spanDevices={{ desktop: 4, tablet: 3, phone: 2 }}
-			class="d-flex align-items-center"
+	<div class="my-2">
+		Updated at:
+		{#if siteResult.updatedAt > 0}
+			{new Date(siteResult.updatedAt).toLocaleString()}
+		{:else}
+			Loading...
+		{/if}
+	</div>
+
+	<div class="border rounded bg-light p-4 mb-2">
+		Filters:
+		<Select
+			bind:value={siteResult.filters.country}
+			on:change={onChange}
+			class="w-100"
+			label="Country"
 		>
-			Filter by country
-		</Cell>
-		<Cell spanDevices={{ desktop: 8, tablet: 5, phone: 2 }}>
-			<Select
-				bind:value={siteResult.filters.country}
-				on:change={onChange}
-				class="w-100"
-			>
-				<Option value="" selected>🏳️ ----</Option>
-				{#if siteResult.value}
-					{#each [...new Set(siteResult.value.map((r) => r.server.country))] as country}
-						<Option value={country}
-							>{country2emoji(country)} {country}</Option
-						>
-					{/each}
-				{/if}
-			</Select>
-		</Cell>
-	</LayoutGrid>
+			<Option value={null} />
+			{#if siteResult.value}
+				{#each [...new Set(siteResult.value.map((r) => r.server.country))] as country}
+					<Option value={country}
+						>{country2emoji(country)} {country}</Option
+					>
+				{/each}
+			{/if}
+		</Select>
+	</div>
+
+	<div class="d-flex justify-content-center">
+		<SitePicker {onClick} />
+	</div>
+
 	<div class="accordion-container">
 		{#if siteResult.value}
-			<Accordion multiple>
-				{#each siteResult.value as result}
-					{#if siteResult.filters.country === "" || siteResult.filters.country === result.server.country}
-						<Server {result} />
-					{/if}
-				{/each}
-			</Accordion>
+			{#if siteResult.value.length > 0}
+				<Accordion multiple>
+					{#each siteResult.value as result}
+						{#if !siteResult.filters.country || siteResult.filters.country === result.server.country}
+							<Server {result} />
+						{/if}
+					{/each}
+				</Accordion>
+			{:else}
+				<div>No servers found, probably something went wrong...</div>
+				<div>Ping the author on Discord!</div>
+			{/if}
 		{:else}
 			<div class="loading">
 				<div class="loading__icon" />
