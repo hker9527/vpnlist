@@ -4,10 +4,10 @@
 	import IconButton from "@smui/icon-button";
 	import List, { Item, Text } from "@smui/list";
 	import TopAppBar, {
-	    AutoAdjust,
-	    Row,
-	    Section,
-	    Title,
+		AutoAdjust,
+		Row,
+		Section,
+		Title,
 	} from "@smui/top-app-bar";
 
 	let topAppBar: TopAppBar;
@@ -20,9 +20,20 @@
 			<Section>
 				<IconButton
 					class="material-icons"
-					on:click={() => (open = !open)}>menu</IconButton
+					on:click={() => (open = !open)}
 				>
+					menu
+				</IconButton>
 				<Title>NasuVPN Checker</Title>
+			</Section>
+			<Section align="end" role="toolbar">
+				<IconButton
+					class="material-icons"
+					href="https://docs.google.com/document/d/18m9wHT4_AIh5ePKSo_ZYH9nSgNh492YQx76bIxmgqyc/edit"
+					target="_blank"
+				>
+					help
+				</IconButton>
 			</Section>
 		</Row>
 	</TopAppBar>
@@ -30,19 +41,19 @@
 		<Drawer variant="modal" bind:open>
 			<DrawerContent>
 				<List>
-                    <Item href="/">
-                        <Icon class="material-icons">home</Icon>
-                        <Text>Server list</Text>
-                    </Item>
+					<Item href="/">
+						<Icon class="material-icons">home</Icon>
+						<Text>Server list</Text>
+					</Item>
 					<Item href="/stat">
-                        <Icon class="material-icons">bar_chart</Icon>
+						<Icon class="material-icons">bar_chart</Icon>
 						<Text>Statistics</Text>
 					</Item>
 				</List>
 			</DrawerContent>
 		</Drawer>
-		<AppContent class="app-content">
-			<slot></slot>
+		<AppContent class="app-content mx-auto">
+			<slot />
 		</AppContent>
 	</AutoAdjust>
 </main>
@@ -50,7 +61,6 @@
 <style>
 	* :global(.app-content) {
 		max-width: 1000px;
-		margin: 0 auto !important;
 	}
 
 	* :global(.site-button) {
