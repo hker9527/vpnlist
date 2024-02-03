@@ -62,8 +62,4 @@
 	* :global(.app-content) {
 		max-width: 1000px;
 	}
-
-	* :global(.site-button) {
-		height: 48px;
-	}
 </style>
