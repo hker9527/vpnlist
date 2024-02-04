@@ -25,11 +25,6 @@
 		},
 	};
 
-	const siteVariants: Record<string, "raised" | "outlined"> = {
-		uma: "raised",
-		dmm: "outlined",
-	};
-
 	const fetchResult = async (site: string) => {
 		siteResult.value = null;
 
@@ -49,13 +44,6 @@
 	let site = "uma";
 	const onClick = async (_site: string) => {
 		site = _site;
-
-		if (siteVariants[site] === "raised") return;
-		for (const button in siteVariants) {
-			siteVariants[button] = "outlined";
-		}
-		siteVariants[site] = "raised";
-
 		await fetchResult(site);
 	};
 
