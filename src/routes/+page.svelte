@@ -5,11 +5,11 @@
 	import SitePicker from "~/lib/SitePicker.svelte";
 	import Server from "~/lib/Server.svelte";
 	import { HOST } from "~/lib/const";
-	import { country2emoji } from "~/lib/emoji";
 	import {
 		ZSiteAPIResponse,
 		type SiteResult,
 	} from "~/lib/types/api/SiteAPIResponse";
+    import { CountryCode } from "~/lib/CountryCode";
 
 	let siteResult: {
 		value: SiteResult["data"] | null;
@@ -78,9 +78,9 @@
 			<Option value={null} />
 			{#if siteResult.value}
 				{#each [...new Set(siteResult.value.map((r) => r.server.country))] as country}
-					<Option value={country}
-						>{country2emoji(country)} {country}</Option
-					>
+					<Option value={country}>
+						{new CountryCode(country).toString()}
+					</Option>
 				{/each}
 			{/if}
 		</Select>

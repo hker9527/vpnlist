@@ -7,13 +7,13 @@
     import type { Map } from "leaflet";
     import "leaflet/dist/leaflet.css";
     import { HOST } from "./const";
-    import { country2emoji } from "./emoji";
     import {
         ZServerAPIResponse,
         type ServerResult,
     } from "./types/api/ServerAPIResponse";
     import type { SiteResult } from "./types/api/SiteAPIResponse";
     import List, { Item, PrimaryText, SecondaryText, Separator, Text } from "@smui/list";
+    import { CountryCode } from "./CountryCode";
 
     export let result: SiteResult["data"][0];
 
@@ -111,9 +111,9 @@
 <main>
     <Panel on:click={fetchServer} bind:open={panelOpen}>
         <Header>
-            <span class="country" title={result.server.country}
-                >{country2emoji(result.server.country)}</span
-            >
+            <span class="country" title={result.server.country}>
+                {new CountryCode(result.server.country).toEmoji()}
+            </span>
             <span class="ip pr-2">{formatIP(result.server.ip)}</span>
             <span class="duration">{result.result.duration}ms</span>
             <IconButton slot="icon" toggle pressed={panelOpen}>
