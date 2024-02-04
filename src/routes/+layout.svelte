@@ -41,11 +41,17 @@
 		<Drawer variant="modal" bind:open>
 			<DrawerContent>
 				<List>
-					<Item href="/">
+					<Item 
+						href="/"
+						on:click={() => (open = false)}
+					>
 						<Icon class="material-icons">home</Icon>
 						<Text>Server list</Text>
 					</Item>
-					<Item href="/stat">
+					<Item 
+						href="/stat"
+						on:click={() => (open = false)}
+					>
 						<Icon class="material-icons">bar_chart</Icon>
 						<Text>Statistics</Text>
 					</Item>
@@ -61,5 +67,6 @@
 <style>
 	* :global(.app-content) {
 		max-width: 1000px;
+		padding: 1em;
 	}
 </style>
