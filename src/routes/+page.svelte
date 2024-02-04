@@ -28,17 +28,18 @@
 	const fetchResult = async (site: string) => {
 		siteResult.value = null;
 
-		fetch(`${HOST}/api/site/${site}`).then(async (res) => {
-			const json = await res.json();
-			if (ZSiteAPIResponse.check(json)) {
-				if (json.success) {
-					siteResult.value = json.data.data;
-					siteResult.updatedAt = json.data.updatedAt;
-				}
+		const res = await fetch(`${HOST}/api/site/${site}`);
+		const json = await res.json();
+		if (ZSiteAPIResponse.check(json)) {
+			if (json.success) {
+				siteResult.value = json.data.data;
+				siteResult.updatedAt = json.data.updatedAt;
 			} else {
-				alert(ZSiteAPIResponse.reason(json));
+				prompt("Failed to fetch data from the server.\nServer response:", JSON.stringify(json));
 			}
-		});
+		} else {
+			alert(ZSiteAPIResponse.reason(json));
+		}
 	};
 
 	let site = "uma";
