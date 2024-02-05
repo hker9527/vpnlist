@@ -6,7 +6,7 @@
     "dev": "vite dev",
     "build": "bun run prepare-css && vite build",
     "preview": "vite preview",
-    "prepare-css": "bunx smui-theme compile build/smui.css -i src/theme && bunx smui-theme compile build/smui-dark.css -i src/theme/dark",
+    "prepare-css": "bunx smui-theme compile static/smui.css -i src/theme && bunx smui-theme compile static/smui-dark.css -i src/theme/dark",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
