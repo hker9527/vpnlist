@@ -6,7 +6,7 @@
     "dev": "vite dev",
     "build": "bun run prepare-css && vite build",
     "preview": "vite preview",
-    "prepare-css": "bunx smui-theme compile build/css/smui.css -i src/theme && bunx smui-theme compile build/css/smui-dark.css -i src/theme/dark",
+    "prepare-css": "bunx smui-theme compile build/smui.css -i src/theme && bunx smui-theme compile build/smui-dark.css -i src/theme/dark",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
@@ -26,6 +26,7 @@
     "@sveltejs/adapter-auto": "^2.0.0",
     "@sveltejs/adapter-static": "^2.0.3",
     "@sveltejs/kit": "^1.20.4",
+    "@types/geojson": "^7946.0.14",
     "@types/svelte-leafletjs": "^0.8.5",
     "smui-theme": "^7.0.0-beta.15",
     "svelte": "^4.0.5",
@@ -37,7 +38,11 @@
   },
   "type": "module",
   "dependencies": {
+    "chart.js": "^4.4.1",
+    "chartjs-chart-geo": "^4.2.8",
     "leaflet": "^1.9.4",
+    "svgmap": "^2.10.1",
+    "topojson-client": "^3.1.0",
     "zod": "^3.22.4"
   }
 }
