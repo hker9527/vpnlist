@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "bun run prepare-css && vite build",
     "preview": "vite preview",
+    "prepare-css": "bunx smui-theme compile build/css/smui.css -i src/theme && bunx smui-theme compile build/css/smui-dark.css -i src/theme/dark",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },

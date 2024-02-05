@@ -67,7 +67,7 @@
 		{/if}
 	</div>
 
-	<div class="border rounded bg-light p-4 mb-2">
+	<div class="border rounded p-4 mb-2">
 		Filters:
 		<Select
 			bind:value={siteResult.filters.country}
