@@ -1,17 +1,15 @@
+import { ASN, Server } from "@prisma/client";
 import { SiteResult } from "./SiteResult";
 
 export interface ServerResult {
-    server: {
-        ip: string;
-        country: string;
-        lat: string;
-        lon: string;
-        speed: string;
-        config: string;
+    server: Omit<Server, "port" | "proto" | "caId" | "certId" | "keyId" | "asnId">,
+    config: {
+        port: number,
+        proto: string,
+        ca: string,
+        cert: string,
+        key: string
     },
-    asn: {
-        id: string;
-        name: string;
-    },
+    asn: ASN,
     results: SiteResult[]
 }

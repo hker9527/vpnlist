@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@libsql/client": "^0.3.5",
+    "@prisma/client": "^5.9.1",
+    "@prisma/extension-accelerate": "^0.6.3",
     "assert-ts": "^0.3.4",
     "csv-parse": "^5.5.0",
     "drizzle-orm": "^0.28.6",

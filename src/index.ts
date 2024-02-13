@@ -1,5 +1,7 @@
+import assert from "assert-ts";
 import { debug, error, log } from "./Reporting";
-import { checkedRecently, insertAsn, insertResults, insertServer, updateStatistic } from "./drizzle/client";
+import { PrismaDatabase } from "./db";
+// import { checkedRecently, insertAsn, insertResults, insertServer, updateStatistic } from "./drizzle/client";
 import { lookup } from "./repo/IPInfo";
 import { fetchServers } from "./repo/VPNGate";
 import { DMMTester } from "./tester/dmm";
@@ -116,14 +118,81 @@ const test = async (server: VPNGateServer) => {
         const asnId = parts.shift()!;
         const asnName = parts.join(" ");
 
+        // Parse OpenVPN config
+        const config = {
+            port: -1,
+            proto: "",
+            caLines: [] as string[],
+            certLines: [] as string[],
+            keyLines: [] as string[]
+        };
+
+        const flags = {
+            ca: false,
+            cert: false,
+            key: false
+        };
+
+        for (const line of server.config.split("\r\n")) {
+            const lineArgs = line.trim().split(" ");
+
+            switch (lineArgs[0]) {
+                case "proto":
+                    config.proto = lineArgs[1];
+                    break;
+                case "remote":
+                    config.port = parseInt(lineArgs[2]);
+                    break;
+                case "<ca>":
+                    flags.ca = true;
+                    break;
+                case "</ca>":
+                    flags.ca = false;
+                    break;
+                case "<cert>":
+                    flags.cert = true;
+                    break;
+                case "</cert>":
+                    flags.cert = false;
+                    break;
+                case "<key>":
+                    flags.key = true;
+                    break;
+                case "</key>":
+                    flags.key = false;
+                    break;
+                default:
+                    if (flags.ca) {
+                        config.caLines.push(line.trim());
+                    } else if (flags.cert) {
+                        config.certLines.push(line.trim());
+                    } else if (flags.key) {
+                        config.keyLines.push(line.trim());
+                    }
+                    break;
+            }
+        }
+
+        assert(config.port !== -1, "Failed to parse port");
+        assert(config.proto !== "", "Failed to parse proto");
+        assert(config.caLines.length > 0, "Failed to parse ca");
+        assert(config.certLines.length > 0, "Failed to parse cert");
+        assert(config.keyLines.length > 0, "Failed to parse key");
+
         ret = {
             server: {
                 ip: server.ip,
                 country: ipinfo.country,
-                lat,
-                lon,
-                speed: server.speed.toString(),
-                config: server.config
+                lat: parseFloat(lat),
+                lon: parseFloat(lon),
+                speed: server.speed
+            },
+            config: {
+                port: config.port,
+                proto: config.proto,
+                ca: config.caLines.join("\r\n"),
+                cert: config.certLines.join("\r\n"),
+                key: config.keyLines.join("\r\n")
             },
             asn: {
                 id: asnId,
@@ -163,6 +232,8 @@ setTimeout(() => {
     process.exit(1);
 }, 45 * 60 * 1000);
 
+const database = new PrismaDatabase(Bun.env.DATABASE_URL!);
+
 log("main", "Updating server list...");
 const servers = await fetchServers();
 
@@ -177,7 +248,7 @@ let serverSkipped = 0;
 log("main", `Testing ${servers.length} servers...`);
 for (const server of servers) {
     try {
-        if (await checkedRecently(server.ip)) {
+        if (await database.isServerCheckedRecently(server.ip)) {
             debug("main", `Skipping ${server.ip} because it was checked recently`);
             serverSkipped++;
             continue;
@@ -186,18 +257,23 @@ for (const server of servers) {
         const result = await test(server);
 
         if (result) {
-            await insertAsn({
-                asn: result.asn
+            await database.upsertASN(result.asn);
+
+            const serverCa = await database.upsertServerCA(result.config.ca);
+            const serverCert = await database.upsertServerCert(result.config.cert);
+            const serverKey = await database.upsertServerKey(result.config.key);
+
+            await database.upsertServer({
+                ...result.server,
+                port: result.config.port,
+                proto: result.config.proto,
+                caId: serverCa.id,
+                certId: serverCert.id,
+                keyId: serverKey.id,
+                asnId: result.asn.id
             });
-            await insertServer({
-                asnId: result.asn.id,
-                server: result.server
-            });
-            await insertResults({
-                ip: result.server.ip,
-                results: result.results
-            });
-            await updateStatistic("serverTested", 1);
+            await database.insertResults(result.server.ip, result.results);
+            await database.updateStatistic("serverTested", 1);
             serverTested++;
         }
     } catch (e) {

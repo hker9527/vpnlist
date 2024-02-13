@@ -1,0 +1,105 @@
+datasource db {
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+}
+
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["views"]
+}
+
+model ASN {
+    id   String @id
+    name String
+
+    servers Server[]
+}
+
+model ServerCA {
+    id      Int    @id @default(autoincrement())
+    content String @unique
+
+    servers Server[]
+}
+
+model ServerCert {
+    id      Int    @id @default(autoincrement())
+    content String @unique
+
+    servers Server[]
+}
+
+model ServerKey {
+    id      Int    @id @default(autoincrement())
+    content String @unique
+
+    servers Server[]
+}
+
+model Server {
+    ip      String @id
+    port    Int
+    country String
+    lat     Float
+    lon     Float
+    speed   Float
+    proto   String
+    caId    Int
+    certId  Int
+    keyId   Int
+    asnId   String
+
+    ca   ServerCA   @relation(fields: [caId], references: [id])
+    cert ServerCert @relation(fields: [certId], references: [id])
+    key  ServerKey  @relation(fields: [keyId], references: [id])
+    asn  ASN        @relation(fields: [asnId], references: [id])
+
+    results Result[]
+}
+
+model Tester {
+    id      Int    @id @default(autoincrement())
+    name    String @unique
+    country String
+    lat     Float
+    lon     Float
+
+    results Result[]
+}
+
+model Result {
+    id        Int      @id @default(autoincrement())
+    testerId  Int
+    ip        String
+    site      String
+    duration  Int
+    timestamp DateTime
+
+    tester Tester @relation(fields: [testerId], references: [id])
+    server Server @relation(fields: [ip], references: [ip])
+}
+
+model Statistic {
+    key   String @id
+    value Float
+}
+
+view SuccessRateView {
+    site    String
+    country String
+    success Int
+    fail    Int
+
+    @@unique([site, country])
+}
+
+view ServerListView {
+    id        Int    @unique
+    site      String
+    duration  Int
+    timestamp Int
+    testerId  Int
+    ip        String
+    country   String
+    speed     Float
+}
