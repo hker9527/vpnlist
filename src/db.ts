@@ -16,7 +16,7 @@ export class PrismaDatabase {
     }
 
     public async getTestResultsBySite(site: string, orderBy: "timestamp" | "duration" | "speed" = "timestamp") {
-        return this._client.serverListView.findMany({
+        return (await this._client.serverListView.findMany({
             where: {
                 site
             },
@@ -38,6 +38,9 @@ export class PrismaDatabase {
             cacheStrategy: {
                 ttl: 60 * 15
             }
+        })).map(r => {
+            const { id, site, ...x } = r;
+            return x;
         });
     }
 
@@ -48,7 +51,7 @@ export class PrismaDatabase {
                 lat: true,
                 lon: true,
                 speed: true,
-                asnId: true
+                asn: true
             },
             where: {
                 ip
