@@ -12,7 +12,7 @@
     import { CountryCode } from "~/lib/CountryCode";
 
 	let siteResult: {
-		value: SiteResult["data"] | null;
+		value: SiteResult | null;
 		updatedAt: number;
 		filters: {
 			country: string;
@@ -32,8 +32,7 @@
 		const json = await res.json();
 		if (ZSiteAPIResponse.check(json)) {
 			if (json.success) {
-				siteResult.value = json.data.data;
-				siteResult.updatedAt = json.data.updatedAt;
+				siteResult.value = json.data;
 			} else {
 				prompt("Failed to fetch data from the server.\nServer response:", JSON.stringify(json));
 			}
@@ -58,15 +57,6 @@
 </script>
 
 <main>
-	<div class="my-2">
-		Updated at:
-		{#if siteResult.updatedAt > 0}
-			{new Date(siteResult.updatedAt).toLocaleString()}
-		{:else}
-			Loading...
-		{/if}
-	</div>
-
 	<div class="border rounded p-4 mb-2">
 		Filters:
 		<Select
@@ -77,7 +67,7 @@
 		>
 			<Option value={null} />
 			{#if siteResult.value}
-				{#each [...new Set(siteResult.value.map((r) => r.server.country))] as country}
+				{#each [...new Set(siteResult.value.map((r) => r.country))] as country}
 					<Option value={country}>
 						{new CountryCode(country).toString()}
 					</Option>
@@ -86,7 +76,7 @@
 		</Select>
 	</div>
 
-	<div class="d-flex justify-content-center">
+	<div class="d-flex justify-content-center my-1">
 		<SitePicker {onClick} />
 	</div>
 
@@ -95,7 +85,7 @@
 			{#if siteResult.value.length > 0}
 				<Accordion multiple>
 					{#each siteResult.value as result}
-						{#if !siteResult.filters.country || siteResult.filters.country === result.server.country}
+						{#if !siteResult.filters.country || siteResult.filters.country === result.country}
 							<Server {result} />
 						{/if}
 					{/each}

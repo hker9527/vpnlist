@@ -15,7 +15,7 @@
     import List, { Item, PrimaryText, SecondaryText, Separator, Text } from "@smui/list";
     import { CountryCode } from "./CountryCode";
 
-    export let result: SiteResult["data"][0];
+    export let result: SiteResult[0];
 
     let panelOpen = false;
     let snackbar: Snackbar;
@@ -34,7 +34,7 @@
     const fetchServer = async () => {
         if (serverResult) return;
 
-        const res = await fetch(`${HOST}/api/server/${result.server.ip}`);
+        const res = await fetch(`${HOST}/api/server/${result.ip}`);
         const json = await res.json();
         if (ZServerAPIResponse.check(json)) {
             if (json.success) {
@@ -69,7 +69,7 @@
     let split = false;
     const getDownloadLink = () => {
         return `${HOST}/api/server/${
-            result.server.ip
+            result.ip
         }/config?variant=${variant}${split ? "&split" : ""}`;
     };
 
@@ -79,7 +79,7 @@
         const l = await import("leaflet");
         const L = l.default;
 
-        map = L.map("map-" + result.server.ip, {
+        map = L.map("map-" + result.ip, {
             center: [serverResult.lat, serverResult.lon],
             zoom: 6,
             scrollWheelZoom: false,
@@ -111,11 +111,11 @@
 <main>
     <Panel on:click={fetchServer} bind:open={panelOpen}>
         <Header>
-            <span class="country" title={result.server.country}>
-                {new CountryCode(result.server.country).toEmoji()}
+            <span class="country" title={result.country}>
+                {new CountryCode(result.country).toEmoji()}
             </span>
-            <span class="ip pr-2">{formatIP(result.server.ip)}</span>
-            <span class="duration">{result.result.duration}ms</span>
+            <span class="ip pr-2">{formatIP(result.ip)}</span>
+            <span class="duration">{result.duration}ms</span>
             <IconButton slot="icon" toggle pressed={panelOpen}>
                 <Icon class="material-icons" on>expand_less</Icon>
                 <Icon class="material-icons">expand_more</Icon>
@@ -124,10 +124,10 @@
         <Content>
             {#if serverResult}
                 <div>
-                    Tested by: {result.tester} at: {new Date(
-                        result.result.timestamp
+                    Tested by: {result.testerId} at: {new Date(
+                        result.timestamp
                     ).toLocaleString()} ({formatTimeDiff(
-                        result.result.timestamp
+                        +new Date(result.timestamp)
                     )})
                 </div>
                 <div>
@@ -146,7 +146,7 @@
                     <div class="loading__text">Loading...</div>
                 </div>
             {/if}
-            <div id="map-{result.server.ip}" class="map my-2" />
+            <div id="map-{result.ip}" class="map my-2" />
             <div>
                 <Button
                     on:click={() => {

@@ -3,7 +3,6 @@ import { Zod } from "../zod";
 import { createAPIResponseSchema } from "./base";
 
 const serverResultSchema = z.object({
-    ip: z.string(),
     country: z.string(),
     lat: z.number(),
     lon: z.number(),
