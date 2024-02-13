@@ -97,7 +97,7 @@ view ServerListView {
     id        Int    @unique
     site      String
     duration  Int
-    timestamp Int
+    timestamp DateTime
     testerId  Int
     ip        String
     country   String
