@@ -9,11 +9,15 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230419.0",
     "drizzle-kit": "^0.19.13",
+    "prisma": "5.9.1",
     "typescript": "^5.0.4",
     "wrangler": "^3.13.1"
   },
   "dependencies": {
     "@libsql/client": "^0.3.4",
+    "@prisma/client": "5.9.1",
+    "@prisma/extension-accelerate": "^0.6.3",
+    "@supabase/supabase-js": "^2.39.3",
     "drizzle-orm": "^0.28.6",
     "drizzle-zod": "^0.5.1",
     "is-ip": "^5.0.1",

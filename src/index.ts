@@ -1,20 +1,12 @@
-import { eq, sql } from "drizzle-orm";
 import { isIPv4 } from "is-ip";
 import { Router, createCors, createResponse, error, json, text } from "itty-router";
-import { TestResultCache } from "./cache/TestResults";
-import { PATCH, SITES, Site, VARIANTS } from "./const";
-import { buildClient, getClient } from "./drizzle/client";
-import { asnNameTable, asnTable, serverTable, testerTable } from "./drizzle/schema";
+import { OVPN_TEMPLATE, PATCH, SITES, Site, VARIANTS } from "./const";
+import { PrismaDatabase } from "./db";
 
 export interface Env {
-    LIBSQL_DB_URL: string;
-    LIBSQL_DB_AUTH_TOKEN: string;
+    IPINFO_TOKEN: string;
+    DATABASE_URL: string;
 }
-
-const testResultsBySiteCache: Record<Site, TestResultCache> = {
-    "uma": new TestResultCache("uma"),
-    "dmm": new TestResultCache("dmm"),
-};
 
 const { preflight, corsify } = createCors();
 
@@ -34,7 +26,7 @@ const goodJson = <T>(data: T) => {
     });
 };
 
-const buildRouter = () => {
+const buildRouter = (ipinfoToken: string) => {
     const router = Router();
 
     return router
@@ -46,7 +38,7 @@ const buildRouter = () => {
                 return badJson(400);
             }
 
-            return goodJson(await testResultsBySiteCache[site].get());
+            return goodJson(await database.getTestResultsBySite(site));
         })
         .get("/api/server/:ip", async ({ params }) => {
             const ip = params.ip;
@@ -55,24 +47,7 @@ const buildRouter = () => {
                 return badJson(400);
             }
 
-            const db = getClient();
-
-            const data = await db.select({
-                ip: serverTable.ip,
-                country: serverTable.country,
-                lat: serverTable.lat,
-                lon: serverTable.lon,
-                speed: serverTable.speed,
-                asn: {
-                    id: asnTable.id,
-                    name: asnNameTable.name
-                }
-            })
-                .from(serverTable)
-                .where(eq(serverTable.ip, ip))
-                .fullJoin(asnTable, eq(serverTable.asnId, asnTable.id))
-                .fullJoin(asnNameTable, eq(asnTable.asnNameId, asnNameTable.id))
-                .get();
+            const data = await database.getServerByIp(ip);
 
             if (!data) {
                 return badJson(404);
@@ -93,21 +68,13 @@ const buildRouter = () => {
                 return badJson(400);
             }
 
-            const db = getClient();
-
-            const data = await db.query.serverTable.findFirst({
-                columns: {
-                    ip: true,
-                    config: true
-                },
-                where: eq(serverTable.ip, ip)
-            });
+            const data = await database.getServerConfigByIp(ip);
 
             if (!data) {
                 return badJson(404);
             }
 
-            const generateFileName = () => {
+            const generateDateTimeString = () => {
                 const now = new Date();
                 const year = now.getFullYear();
                 const month = now.getMonth() + 1;
@@ -116,10 +83,19 @@ const buildRouter = () => {
                 const minute = now.getMinutes();
                 const second = now.getSeconds();
 
-                return `NasuVPN-${year}${month.toString().padStart(2, "0")}${date.toString().padStart(2, "0")}-${hour.toString().padStart(2, "0")}${minute.toString().padStart(2, "0")}${second.toString().padStart(2, "0")}-${ip}-${variant == "current" ? "C" : "L"}${typeof split !== "undefined" ? "S" : "O"}.ovpn`;
-            };
+                return `${year}${month.toString().padStart(2, "0")}${date.toString().padStart(2, "0")}-${hour.toString().padStart(2, "0")}${minute.toString().padStart(2, "0")}${second.toString().padStart(2, "0")}`;
+            }
 
-            let config = data.config;
+            const fileName = `NasuVPN-${generateDateTimeString()}-${ip}-${variant == "current" ? "C" : "L"}${typeof split !== "undefined" ? "S" : "O"}.ovpn`;
+
+            let config = OVPN_TEMPLATE
+                .replace("%TIME%", new Date().toISOString())
+                .replace("%PROTO%", data.proto)
+                .replace("%IP%", data.ip)
+                .replace("%PORT%", data.port.toString())
+                .replace("%CA%", data.ca.content)
+                .replace("%CERT%", data.cert.content)
+                .replace("%KEY%", data.key.content);
 
             if (variant === "legacy") {
                 // Comment out line starts with "data-ciphers"
@@ -132,29 +108,10 @@ const buildRouter = () => {
 
             return createResponse("application/x-openvpn-profile")(config, {
                 headers: {
-                    "Content-Disposition": `attachment; filename="${generateFileName()}"`,
+                    "Content-Disposition": `attachment; filename="${fileName}"`,
                     "Cache-Control": "public, max-age=86400"
                 }
             });
-        })
-        .get("/api/tester/:id", async ({ params }) => {
-            const id = params.id;
-
-            if (!/^\d+$/.test(id)) {
-                return badJson(400);
-            }
-
-            const client = getClient();
-
-            const tester = await client.query.testerTable.findFirst({
-                where: eq(testerTable.id, parseInt(id))
-            });
-
-            if (!tester) {
-                return badJson(404);
-            }
-
-            return goodJson(tester);
         })
         .get("/api/stat/:site/countries", async ({ params }) => {
             const site = params.site as Site;
@@ -163,20 +120,32 @@ const buildRouter = () => {
                 return badJson(400);
             }
 
-            const client = getClient();
+            const data = await database.getSuccessRatesBySite(site);
 
-            const data = await client.select({
-                country: serverTable.country,
-                success: sql`COUNT(CASE WHEN duration >= 0 THEN 1 END)`.as("success"),
-                fail: sql`COUNT(CASE WHEN duration < 0 THEN 1 END)`.as("fail")
-            })
-                .from(resultTable)
-                .innerJoin(serverTable, eq(resultTable.ip, serverTable.ip))
-                .where(eq(resultTable.site, site))
-                .groupBy(serverTable.country);
-
+            if (!data) {
+                return badJson(404);
+            }
+            
             return goodJson(data);
         })
+        // .get("/api/ipinfo", async ({ headers }) => {
+        //     const ip = headers.get("CF-Connecting-IP");
+
+        //     if (!ip) {
+        //         return badJson(400);
+        //     }
+
+        //     // Check referer
+        //     const referer = headers.get("Referer");
+        //     if (referer !== "https://www.umavpn.pro/") {
+        //         return badJson(403);
+        //     }
+
+        //     const data = await fetch(`https://ipinfo.io/${ip}?token=${ipinfoToken}`)
+        //         .then(res => res.json());
+
+        //     return goodJson(data);
+        // })
         .all("*", () => {
             return text("OwO?", {
                 status: 404
@@ -184,14 +153,17 @@ const buildRouter = () => {
         });
 }
 
-let router: ReturnType<typeof buildRouter>;
+let database!: PrismaDatabase;
+let router!: ReturnType<typeof buildRouter>;
 
 export default {
     fetch: async (request: Request, env: Env) => {
-        buildClient(env.LIBSQL_DB_URL, env.LIBSQL_DB_AUTH_TOKEN);
+        if (!database) {
+            database = new PrismaDatabase(env.DATABASE_URL);
+        }
 
         if (!router) {
-            router = buildRouter();
+            router = buildRouter(env.IPINFO_TOKEN);
         }
 
         return router
