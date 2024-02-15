@@ -15,7 +15,7 @@ export class PrismaDatabase {
         }).$extends(withAccelerate());
     }
 
-    public async getTestResultsBySite(site: string, orderBy: "timestamp" | "duration" | "speed" = "timestamp") {
+    public async getTestResultsBySite(site: string, take = 20, orderBy: "timestamp" | "duration" | "speed" = "timestamp") {
         return (await this._client.serverListView.findMany({
             where: {
                 site
@@ -33,7 +33,7 @@ export class PrismaDatabase {
                         };
                 }
             })(),
-            take: 10,
+            take,
             // @ts-ignore
             cacheStrategy: {
                 ttl: 60 * 15
