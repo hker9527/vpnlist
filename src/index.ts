@@ -1,7 +1,6 @@
 import assert from "assert-ts";
 import { debug, error, log } from "./Reporting";
 import { PrismaDatabase } from "./db";
-// import { checkedRecently, insertAsn, insertResults, insertServer, updateStatistic } from "./drizzle/client";
 import { lookup } from "./repo/IPInfo";
 import { fetchServers } from "./repo/VPNGate";
 import { DMMTester } from "./tester/dmm";
