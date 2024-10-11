@@ -8,6 +8,7 @@ import { LoginResponseSchema } from "../type/api/loginurl";
 import { userInfoResponseSchema } from "../type/api/userinfo";
 
 export class DMMTester extends Tester {
+    private retryCount = 0;
     private cookies = {
         login_session_id: "",
         login_secure_id: ""
@@ -120,6 +121,12 @@ export class DMMTester extends Tester {
                 case 203:
                     debug(this.constructor.name, `Session invalid`);
                     await this.init();
+                    this.retryCount++;
+
+                    if (this.retryCount > 3) {
+                        error(this.constructor.name, `Failed to refresh session after 3 attempts`);
+                        break;
+                    }
                     return this.test(device);
                 case 803:
                     debug(this.constructor.name, `Blocked`);
