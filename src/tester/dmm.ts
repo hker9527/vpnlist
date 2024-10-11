@@ -106,7 +106,7 @@ export class DMMTester extends Tester {
             argv: [
                 "--interface", device,
                 "-X", "POST",
-                "-H", `Cookie: login_session_id=${this.cookies.login_session_id};login_secure_id=${this.cookies.login_secure_id}}`
+                "-H", `Cookie: login_session_id=${this.cookies.login_session_id}; login_secure_id=${this.cookies.login_secure_id}`
             ]
         });
 
