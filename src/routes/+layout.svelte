@@ -59,11 +59,6 @@
 			</DrawerContent>
 		</Drawer>
 		<AppContent class="app-content mx-auto">
-			<div>
-				Hello fellow user,
-				this website will be migrated to a new domain soon.
-				Please use the new domain <a href="https://umavpn.top">https://umavpn.top</a>.
-			</div>
 			<slot />
 		</AppContent>
 	</AutoAdjust>
