@@ -6,7 +6,6 @@ const siteResultSchema = z.array(
     z.object({
         duration: z.number(),
         timestamp: z.string(),
-        testerId: z.number(),
         ip: z.string(),
         country: z.string(),
         speed: z.number(),
