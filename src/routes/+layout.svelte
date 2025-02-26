@@ -73,6 +73,6 @@
 	}
 
 	main {
-		font-family: "Twemoji Country Flags", "Helvetica", "Comic Sans", serif;
+		font-family: "Twemoji Country Flags", "Roboto", "Helvetica", "Arial", sans-serif;
 	}
 </style>
