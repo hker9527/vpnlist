@@ -200,17 +200,13 @@
         });
     };
 
-    const onSwitchSite = async (site: string) => {
+    const onSwitchSite = async (site?: string) => {
         await fetchStat(site);
         onSort();
         await renderData();
     };
 
-    onMount(async () => {
-        await fetchStat();
-        onSort();
-        await renderData();
-    });
+    onMount(onSwitchSite);
 </script>
 
 <main>
@@ -218,8 +214,15 @@
         <SitePicker onClick={onSwitchSite} />
     </div>
 
-    <canvas id="map" class="my-2" bind:this={map}></canvas>
-
+    {#if result.length > 0}
+        <canvas id="map" class="my-2" bind:this={map}></canvas>
+    {:else}
+        <div class="d-flex align-items-center my-2">
+            <strong role="status">Loading...</strong>
+            <div class="spinner-border ms-auto" aria-hidden="true"></div>
+        </div>
+    {/if}
+    
     <DataTable
         sortable
         bind:sort
