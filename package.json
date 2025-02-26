@@ -41,6 +41,7 @@
   "dependencies": {
     "chart.js": "^4.4.1",
     "chartjs-chart-geo": "^4.2.8",
+    "country-flag-emoji-polyfill": "^0.1.8",
     "leaflet": "^1.9.4",
     "svgmap": "^2.10.1",
     "topojson-client": "^3.1.0",

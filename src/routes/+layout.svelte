@@ -9,7 +9,9 @@
 		Section,
 		Title,
 	} from "@smui/top-app-bar";
-
+	import { polyfillCountryFlagEmojis } from "country-flag-emoji-polyfill";
+	
+	polyfillCountryFlagEmojis();
 	let topAppBar: TopAppBar;
 	let open = false;
 </script>
@@ -68,5 +70,9 @@
 	* :global(.app-content) {
 		max-width: 1000px;
 		padding: 1em;
+	}
+
+	main {
+		font-family: "Twemoji Country Flags", "Helvetica", "Comic Sans", serif;
 	}
 </style>
