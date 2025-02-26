@@ -51,17 +51,20 @@ export class PrismaDatabase {
     ) {
         const transform = (data: {
             ip: string;
+            country: string;
             _min: Record<string, any>
         }[]): {
             ip: string;
             timestamp: string;
             duration: number;
             speed: number;
+            country: string;
         } => {
             return data.map(d => {
-                const { ip, _min } = d;
+                const { ip, country, _min } = d;
                 return {
                     ip,
+                    country,
                     ..._min
                 };
             }) as any;
@@ -71,6 +74,7 @@ export class PrismaDatabase {
             return transform(await this._client.serverListView.groupBy({
                 by: [
                     "ip",
+                    "country",
                     orderBy
                 ],
                 _min: {
@@ -92,6 +96,7 @@ export class PrismaDatabase {
         return transform(await this._client.serverListView.groupBy({
             by: [
                 "ip",
+                "country",
                 orderBy
             ],
             where: {
