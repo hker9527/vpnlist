@@ -123,120 +123,126 @@
         </Header>
         <Content>
             {#if serverResult}
-                <div>
-                    Tested by: {result.testerId} at: {new Date(
-                        result.timestamp
-                    ).toLocaleString()} ({formatTimeDiff(
-                        +new Date(result.timestamp)
-                    )})
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <div>
+                            Tested at: {new Date(
+                                result.timestamp
+                            ).toLocaleString()} ({formatTimeDiff(
+                                +new Date(result.timestamp)
+                            )})
+                        </div>
+                        <div>
+                            ISP: <a
+                                href="https://ipinfo.io/{serverResult.asn.id}"
+                                target="_blank">{serverResult.asn.id}</a
+                            >
+                            {serverResult.asn.name}
+                        </div>
+                        <div>
+                            Speed: {Math.round(serverResult.speed * 100) / 100} Mbps
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div id="map-{result.ip}" class="map my-2" />
+                    </div>
                 </div>
                 <div>
-                    ISP: <a
-                        href="https://ipinfo.io/{serverResult.asn.id}"
-                        target="_blank">{serverResult.asn.id}</a
+                    <Button
+                        on:click={() => {
+                            menu.setOpen(true);
+                        }}
+                        variant="raised">Download</Button
                     >
-                    {serverResult.asn.name}
-                </div>
-                <div>
-                    Speed: {Math.round(serverResult.speed * 100) / 100} Mbps
+                    <Menu bind:this={menu}>
+                        <List>
+                            <SelectionGroup>
+                                {#each ["current", "legacy"] as _variant}
+                                    <Item
+                                        on:SMUI:action={() => {
+                                            variant = _variant;
+                                        }}
+                                        selected={_variant === variant}
+                                    >
+                                        <SelectionGroupIcon>
+                                            <i class="material-icons">check</i>
+                                        </SelectionGroupIcon>
+                                        <Text>
+                                            <PrimaryText>
+                                                {_variant === "current"
+                                                    ? "Current"
+                                                    : "Legacy"}
+                                            </PrimaryText>
+                                            <SecondaryText>
+                                                {_variant === "current"
+                                                    ? "v2.6.0 or above"
+                                                    : "below v2.6.0"}
+                                            </SecondaryText>
+                                        </Text>
+                                    </Item>
+                                {/each}
+                            </SelectionGroup>
+                            <Separator />
+                            <SelectionGroup>
+                                {#each [false, true] as _split}
+                                    <Item
+                                        on:SMUI:action={() => {
+                                            split = _split;
+                                        }}
+                                        selected={_split === split}
+                                    >
+                                        <SelectionGroupIcon>
+                                            <i class="material-icons">check</i>
+                                        </SelectionGroupIcon>
+                                        <Text>
+                                            <PrimaryText>
+                                                {_split
+                                                    ? "Split tunneling"
+                                                    : "Original"}
+                                            </PrimaryText>
+                                            <SecondaryText>
+                                                {_split
+                                                    ? "Only works on Windows"
+                                                    : "Cross-platform"}
+                                            </SecondaryText>
+                                        </Text>
+                                    </Item>
+                                {/each}
+                            </SelectionGroup>
+                            <Separator />
+                            <Item on:SMUI:action={() => {
+                                snackbar.open();
+                                const link = getDownloadLink();
+                                const a = document.createElement("a");
+                                a.href = link;
+                                a.click();
+                            }}>
+                                <SelectionGroupIcon>
+                                    <i class="material-icons">file_download</i>
+                                </SelectionGroupIcon>
+                                <Text>Download</Text>
+                            </Item>
+                            <Item on:SMUI:action={() => {
+                                snackbar.open();
+                                const link = getDownloadLink();
+                                const a = document.createElement("a");
+                                a.href = `openvpn://import-profile/${link}`;
+                                a.click();
+                            }}>
+                                <SelectionGroupIcon>
+                                    <i class="material-icons">android</i>
+                                </SelectionGroupIcon>
+                                <Text>Open in app</Text>
+                            </Item>
+                        </List>
+                    </Menu>
                 </div>
             {:else}
-                <div class="loading">
-                    <div class="loading__icon" />
-                    <div class="loading__text">Loading...</div>
+                <div class="d-flex align-items-center my-2">
+                    <strong role="status">Loading...</strong>
+                    <div class="spinner-border ms-auto" aria-hidden="true"></div>
                 </div>
             {/if}
-            <div id="map-{result.ip}" class="map my-2" />
-            <div>
-                <Button
-                    on:click={() => {
-                        menu.setOpen(true);
-                    }}
-                    variant="raised">Download</Button
-                >
-                <Menu bind:this={menu}>
-                    <List>
-                        <SelectionGroup>
-                            {#each ["current", "legacy"] as _variant}
-                                <Item
-                                    on:SMUI:action={() => {
-                                        variant = _variant;
-                                    }}
-                                    selected={_variant === variant}
-                                >
-                                    <SelectionGroupIcon>
-                                        <i class="material-icons">check</i>
-                                    </SelectionGroupIcon>
-                                    <Text>
-                                        <PrimaryText>
-                                            {_variant === "current"
-                                                ? "Current"
-                                                : "Legacy"}
-                                        </PrimaryText>
-                                        <SecondaryText>
-                                            {_variant === "current"
-                                                ? "v2.6.0 or above"
-                                                : "below v2.6.0"}
-                                        </SecondaryText>
-                                    </Text>
-                                </Item>
-                            {/each}
-                        </SelectionGroup>
-                        <Separator />
-                        <SelectionGroup>
-                            {#each [false, true] as _split}
-                                <Item
-                                    on:SMUI:action={() => {
-                                        split = _split;
-                                    }}
-                                    selected={_split === split}
-                                >
-                                    <SelectionGroupIcon>
-                                        <i class="material-icons">check</i>
-                                    </SelectionGroupIcon>
-                                    <Text>
-                                        <PrimaryText>
-                                            {_split
-                                                ? "Split tunneling"
-                                                : "Original"}
-                                        </PrimaryText>
-                                        <SecondaryText>
-                                            {_split
-                                                ? "Only works on Windows"
-                                                : "Universal"}
-                                        </SecondaryText>
-                                    </Text>
-                                </Item>
-                            {/each}
-                        </SelectionGroup>
-                        <Separator />
-                        <Item on:SMUI:action={() => {
-                            snackbar.open();
-                            const link = getDownloadLink();
-                            const a = document.createElement("a");
-                            a.href = link;
-                            a.click();
-                        }}>
-                            <SelectionGroupIcon>
-                                <i class="material-icons">file_download</i>
-                            </SelectionGroupIcon>
-                            <Text>Download</Text>
-                        </Item>
-                        <Item on:SMUI:action={() => {
-                            snackbar.open();
-                            const link = getDownloadLink();
-                            const a = document.createElement("a");
-                            a.href = `openvpn://import-profile/${link}`;
-                            a.click();
-                        }}>
-                            <SelectionGroupIcon>
-                                <i class="material-icons">android</i>
-                            </SelectionGroupIcon>
-                            <Text>Open in app</Text>
-                        </Item>
-                    </List>
-                </Menu>
-            </div>
         </Content>
     </Panel>
     <Snackbar bind:this={snackbar}>
