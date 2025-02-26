@@ -25,7 +25,14 @@
 	const fetchResult = async () => {
 		siteResult = null;
 
-		const res = await fetch(`${HOST}/api/site/${options.sites[0] || "uma"}?take=${options.take}&orderBy=${options.orderBy}`);
+		const url = new URL(`${HOST}/api/server`);
+		for (const site of options.sites) {
+			url.searchParams.append("sites", site);
+		}
+		url.searchParams.append("take", options.take.toString());
+		url.searchParams.append("orderBy", options.orderBy);
+
+		const res = await fetch(url);
 		const json = await res.json();
 		if (ZSiteAPIResponse.check(json)) {
 			if (json.success) {
@@ -43,9 +50,7 @@
 		await fetchResult();
 	};
 
-	onMount(async () => {
-		await fetchResult();
-	});
+	onMount(fetchResult);
 
 	const onChange = async () => {
 		await fetchResult();
@@ -91,7 +96,7 @@
 			</Select>
 		</div>
 		<div class="col-12 col-md-4 p-4">
-			Sites:
+			Required sites:
 			<SitePickerMultiple onChange={onSitesChange} />
 		</div>
 	</div>
