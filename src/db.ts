@@ -84,7 +84,7 @@ export class PrismaDatabase {
                 take,
                 // @ts-ignore
                 cacheStrategy: {
-                    ttl: 15
+                    ttl: 60 * 15
                 }
             }) as any);
         }
@@ -117,7 +117,7 @@ export class PrismaDatabase {
             take,
             // @ts-ignore
             cacheStrategy: {
-                ttl: 15
+                ttl: 60 * 15
             }
         }) as any);
     }
