@@ -44,6 +44,84 @@ export class PrismaDatabase {
         });
     }
 
+    public async getServers(
+        sites: string[],
+        take = 20,
+        orderBy: "timestamp" | "duration" | "speed" = "timestamp"
+    ) {
+        const transform = (data: {
+            ip: string;
+            _min: Record<string, any>
+        }[]): {
+            ip: string;
+            timestamp: string;
+            duration: number;
+            speed: number;
+        } => {
+            return data.map(d => {
+                const { ip, _min } = d;
+                return {
+                    ip,
+                    ..._min
+                };
+            }) as any;
+        };
+
+        if (sites.length === 0) {
+            return transform(await this._client.serverListView.groupBy({
+                by: [
+                    "ip",
+                    orderBy
+                ],
+                _min: {
+                    timestamp: true,
+                    duration: true,
+                    speed: true
+                },
+                orderBy: {
+                    [orderBy]: orderBy === "duration" ? "asc" : "desc"
+                },
+                take,
+                // @ts-ignore
+                cacheStrategy: {
+                    ttl: 15
+                }
+            }) as any);
+        }
+
+        return transform(await this._client.serverListView.groupBy({
+            by: [
+                "ip",
+                orderBy
+            ],
+            where: {
+                site: {
+                    in: sites
+                }
+            },
+            _min: {
+                timestamp: true,
+                duration: true,
+                speed: true
+            },
+            having: {
+                ip: {
+                    _count: {
+                        equals: sites.length
+                    }
+                }
+            },
+            orderBy: {
+                [orderBy]: orderBy === "duration" ? "asc" : "desc"
+            },
+            take,
+            // @ts-ignore
+            cacheStrategy: {
+                ttl: 15
+            }
+        }) as any);
+    }
+
     public async getServerByIp(ip: string) {
         return this._client.server.findUnique({
             select: {

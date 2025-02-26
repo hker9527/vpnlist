@@ -65,6 +65,36 @@ const buildRouter = (ipinfoToken: string) => {
                 orderBy as "timestamp" | "duration" | "speed" || "timestamp"
             ));
         })
+        .get("/api/server", async ({ query }) => {
+            // Newer version of getting a list of profiles.
+            // Query list:
+            // - sites[]: Site[] (optional)
+            // - take: number
+            // - orderBy: "timestamp" | "duration" | "speed"
+            const { sites, take, orderBy } = query;
+            const _sites = typeof sites === "string" ? [sites] : sites;
+
+            if (_sites?.some(site => !SITES.includes(site as Site))) {
+                return badJson(400);
+            }
+
+            if (typeof take !== "undefined" && isNaN(Number(take))) {
+                return badJson(400);
+            }
+
+            if (
+                typeof orderBy === "object"
+                || typeof orderBy === "string" && !["timestamp", "duration", "speed"].includes(orderBy)
+            ) {
+                return badJson(400);
+            }
+
+            return goodJson(await database.getServers(
+                _sites ?? [],
+                Math.min(Math.max(Number(take) || 20, 1), 50),
+                orderBy as "timestamp" | "duration" | "speed" || "timestamp"
+            ));
+        })
         .get("/api/server/:ip", async ({ params }) => {
             const ip = params.ip;
 
@@ -150,7 +180,7 @@ const buildRouter = (ipinfoToken: string) => {
             if (!data) {
                 return badJson(404);
             }
-            
+
             return goodJson(data);
         })
         // .get("/api/ipinfo", async ({ headers }) => {
