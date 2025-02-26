@@ -111,7 +111,7 @@
 <main>
     <Panel on:click={fetchServer} bind:open={panelOpen}>
         <Header>
-            <span class="country" title={result.country}>
+            <span class="country" title={new CountryCode(result.country).toFullName()}>
                 {new CountryCode(result.country).toEmoji()}
             </span>
             <span class="ip pr-2">{formatIP(result.ip)}</span>
