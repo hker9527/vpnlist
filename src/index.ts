@@ -8,6 +8,15 @@ export interface Env {
     DATABASE_URL: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+interface BigInt {
+    /** Convert to BigInt to string form in JSON.stringify */
+    toJSON: () => string;
+}
+(BigInt.prototype as any).toJSON = function() {
+    return this.toString()
+}
+
 const { preflight, corsify } = createCors();
 
 const badJson = (status = 404) => {
