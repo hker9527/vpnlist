@@ -3,7 +3,6 @@
 	import Select, { Option } from "@smui/select";
 	import TextField from "@smui/textfield";
 	import { onMount } from "svelte";
-	import SitePicker from "~/lib/SitePicker.svelte";
 	import Server from "~/lib/Server.svelte";
 	import { HOST } from "~/lib/const";
 	import {
@@ -12,9 +11,10 @@
 	} from "~/lib/types/api/SiteAPIResponse";
     import { CountryCode } from "~/lib/CountryCode";
     import Button from "@smui/button";
+    import SitePickerMultiple from "~/lib/SitePickerMultiple.svelte";
 
 	const options = {
-		site: "uma",
+		sites: ["uma"],
 		country: "",
 		take: 20,
 		orderBy: "timestamp"
@@ -25,7 +25,7 @@
 	const fetchResult = async () => {
 		siteResult = null;
 
-		const res = await fetch(`${HOST}/api/site/${options.site}?take=${options.take}&orderBy=${options.orderBy}`);
+		const res = await fetch(`${HOST}/api/site/${options.sites[0] || "uma"}?take=${options.take}&orderBy=${options.orderBy}`);
 		const json = await res.json();
 		if (ZSiteAPIResponse.check(json)) {
 			if (json.success) {
@@ -38,8 +38,8 @@
 		}
 	};
 
-	const onClick = async (_site: string) => {
-		options.site = _site;
+	const onSitesChange = async (sites: string[]) => {
+		options.sites = sites;
 		await fetchResult();
 	};
 
@@ -53,53 +53,54 @@
 </script>
 
 <main>
-	<div class="border rounded p-4 mb-2">
-		Filters:
-		<Select
-			bind:value={options.country}
-			class="w-100"
-			label="Country"
-		>
-			<Option value={null} />
-			{#if siteResult}
-				{#each [...new Set(siteResult.map((r) => r.country))] as country}
-					<Option value={country}>
-						{new CountryCode(country).toString()}
-					</Option>
-				{/each}
-			{/if}
-		</Select>
+	<div class="row border border-secondary rounded mb-2">
+		<div class="col-12 col-md-8 p-4">
+			Filters:
+			<Select
+				bind:value={options.country}
+				class="w-100"
+				label="Country"
+			>
+				<Option value={null} />
+				{#if siteResult}
+					{#each [...new Set(siteResult.map((r) => r.country))] as country}
+						<Option value={country}>
+							{new CountryCode(country).toString()}
+						</Option>
+					{/each}
+				{/if}
+			</Select>
 
-		<TextField
-			bind:value={options.take}
-			class="w-100"
-			label="Result count"
-			input$min="1"
-			input$max="100"
-			input$step="10"
-		/>
+			<TextField
+				bind:value={options.take}
+				class="w-100"
+				label="Result count"
+				input$min="1"
+				input$max="100"
+				input$step="10"
+			/>
 
-		<Select
-			bind:value={options.orderBy}
-			class="w-100"
-			label="Order by"
-		>
-			<Option value="timestamp" selected>Most recent</Option>
-			<Option value="duration">Lowest ping</Option>
-			<Option value="speed">Fastest speed</Option>
-		</Select>
-
-		<Button
-			class="w-100"
-			on:click={() => onChange()}
-		>
-			Apply
-		</Button>
+			<Select
+				bind:value={options.orderBy}
+				class="w-100"
+				label="Order by"
+			>
+				<Option value="timestamp" selected>Most recent</Option>
+				<Option value="duration">Lowest ping</Option>
+				<Option value="speed">Fastest speed</Option>
+			</Select>
+		</div>
+		<div class="col-12 col-md-4 p-4">
+			Sites:
+			<SitePickerMultiple onChange={onSitesChange} />
+		</div>
 	</div>
-
-	<div class="d-flex justify-content-center my-1">
-		<SitePicker {onClick} />
-	</div>
+	<Button
+		class="w-100"
+		on:click={() => onChange()}
+	>
+		Apply
+	</Button>
 
 	<div class="accordion-container">
 		{#if siteResult}
