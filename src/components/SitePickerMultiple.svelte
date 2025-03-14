@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Switch from "@smui/switch";
-	import FormField from "@smui/form-field";
+	import { Site, list as siteList } from "@lib/Site";
 	import { Label } from "@smui/button";
-    import { Site, list as siteList } from "./Site";
+	import FormField from "@smui/form-field";
+	import Switch from "@smui/switch";
 
 	export let onChange: (sites: string[]) => Promise<void>;
 

@@ -1,25 +1,25 @@
 <script lang="ts">
+    import SitePicker from "@components/SitePicker.svelte";
+    import { HOST } from "@lib/const";
+    import { CountryCode } from "@lib/CountryCode";
+    import {
+        ZStatAPIResponse,
+        type StatResult,
+    } from "@lib/types/api/StatAPIResponse";
     import DataTable, {
-        Head,
         Body,
-        Row,
         Cell,
+        Head,
         Label,
+        Row,
         SortValue,
     } from "@smui/data-table";
     import IconButton from "@smui/icon-button";
     import LinearProgress from "@smui/linear-progress";
-    import { topojson, ChoroplethChart } from "chartjs-chart-geo";
     import { Chart } from "chart.js/auto";
+    import { ChoroplethChart, topojson } from "chartjs-chart-geo";
     import type { Feature, Geometry } from "geojson";
     import { onMount } from "svelte";
-    import { HOST } from "~/lib/const";
-    import { CountryCode } from "~/lib/CountryCode";
-    import SitePicker from "~/lib/SitePicker.svelte";
-    import {
-        ZStatAPIResponse,
-        type StatResult,
-    } from "~/lib/types/api/StatAPIResponse";
 
     let sort: keyof StatResult[number] = "success";
     let sortDirection: Lowercase<keyof typeof SortValue> = "descending";

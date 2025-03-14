@@ -1,19 +1,19 @@
 <script lang="ts">
+    import { HOST } from "@lib/const";
+    import {
+        ZServerAPIResponse,
+        type ServerResult,
+    } from "@lib/types/api/ServerAPIResponse";
     import { Content, Header, Panel } from "@smui-extra/accordion";
     import Button from "@smui/button";
     import IconButton, { Icon } from "@smui/icon-button";
+    import List, { Item, PrimaryText, SecondaryText, Separator, Text } from "@smui/list";
     import Menu, { SelectionGroup, SelectionGroupIcon } from "@smui/menu";
     import Snackbar, { Actions, Label } from "@smui/snackbar";
     import type { Map } from "leaflet";
     import "leaflet/dist/leaflet.css";
-    import { HOST } from "./const";
-    import {
-        ZServerAPIResponse,
-        type ServerResult,
-    } from "./types/api/ServerAPIResponse";
-    import type { SiteResult } from "./types/api/SiteAPIResponse";
-    import List, { Item, PrimaryText, SecondaryText, Separator, Text } from "@smui/list";
-    import { CountryCode } from "./CountryCode";
+    import { CountryCode } from "../lib/CountryCode";
+    import type { SiteResult } from "../lib/types/api/SiteAPIResponse";
 
     export let result: SiteResult[0];
 

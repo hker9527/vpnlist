@@ -1,17 +1,17 @@
 <script lang="ts">
+	import Server from "@components/Server.svelte";
+	import SitePickerMultiple from "@components/SitePickerMultiple.svelte";
+	import { HOST } from "@lib/const";
+	import { CountryCode } from "@lib/CountryCode";
+	import {
+	    ZSiteAPIResponse,
+	    type SiteResult,
+	} from "@lib/types/api/SiteAPIResponse";
 	import Accordion from "@smui-extra/accordion";
+	import Button from "@smui/button";
 	import Select, { Option } from "@smui/select";
 	import TextField from "@smui/textfield";
 	import { onMount } from "svelte";
-	import Server from "~/lib/Server.svelte";
-	import { HOST } from "~/lib/const";
-	import {
-		ZSiteAPIResponse,
-		type SiteResult,
-	} from "~/lib/types/api/SiteAPIResponse";
-    import { CountryCode } from "~/lib/CountryCode";
-    import Button from "@smui/button";
-    import SitePickerMultiple from "~/lib/SitePickerMultiple.svelte";
 
 	const options = {
 		sites: ["uma"],

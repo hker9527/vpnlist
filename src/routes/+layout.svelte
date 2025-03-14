@@ -4,16 +4,26 @@
 	import IconButton from "@smui/icon-button";
 	import List, { Item, Text } from "@smui/list";
 	import TopAppBar, {
-		AutoAdjust,
-		Row,
-		Section,
-		Title,
+	    AutoAdjust,
+	    Row,
+	    Section,
+	    Title,
 	} from "@smui/top-app-bar";
 	import { polyfillCountryFlagEmojis } from "country-flag-emoji-polyfill";
+	import { onMount } from "svelte";
 	
 	polyfillCountryFlagEmojis();
+
 	let topAppBar: TopAppBar;
 	let open = false;
+
+	// Dynamic meta tags
+	onMount(() => {
+		const meta = document.createElement("meta");
+		meta.name = "description";
+		meta.content = "NasuVPN Checker";
+		document.head.appendChild(meta);
+	});
 </script>
 
 <main>
