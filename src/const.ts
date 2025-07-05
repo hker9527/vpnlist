@@ -7,7 +7,8 @@ export type Site = typeof SITES[number];
 
 export const VARIANTS = [
     "legacy",
-    "current"
+    "current",
+    "beta"
 ];
 
 export const OVPN_TEMPLATE = `
@@ -36,10 +37,9 @@ verb 3
 
 <key>
 %KEY%
-</key>
-`.replaceAll("\n", "\r\n");
 
-export const PATCH = `
+export const CURRENT_PATCH = `
+
 # Split tunneling patch
 route-nopull
 
@@ -51,3 +51,15 @@ route prd-info-umamusume.akamaized.net
 
 route apidgp-gameplayer.games.dmm.com
 `.replaceAll("\n", "\r\n");
+
+export const BETA_PATCH = `
+
+# Split tunneling patch (Beta)
+dns search-domains api-umamusume.cygames.jp
+dns search-domains prd-storage-umamusume.akamaized.net
+dns search-domains prd-storage-app-umamusume.akamaized.net
+dns search-domains prd-storage-game-umamusume.akamaized.net
+dns search-domains prd-info-umamusume.akamaized.net
+
+dns search-domains apidgp-gameplayer.games.dmm.com
+`.replaceAll("\n", "\r\n") + CURRENT_PATCH;

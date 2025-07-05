@@ -141,16 +141,22 @@ const buildRouter = (ipinfoToken: string) => {
                 return `${year}${month.toString().padStart(2, "0")}${date.toString().padStart(2, "0")}-${hour.toString().padStart(2, "0")}${minute.toString().padStart(2, "0")}${second.toString().padStart(2, "0")}`;
             }
 
-            const fileName = `NasuVPN-${generateDateTimeString()}-${ip}-${variant == "current" ? "C" : "L"}${typeof split !== "undefined" ? "S" : "O"}.ovpn`;
+            const shortCode = {
+                legacy: "L",
+                current: "C",
+                beta: "B"
+            }[variant];
+
+            const fileName = `NasuVPN-${generateDateTimeString()}-${ip}-${shortCode}${typeof split !== "undefined" ? "S" : "O"}.ovpn`;
 
             let config = OVPN_TEMPLATE
                 .replace("%TIME%", new Date().toISOString())
                 .replace("%PROTO%", data.proto)
                 .replace("%IP%", data.ip)
                 .replace("%PORT%", data.port.toString())
-                .replace("%CA%", data.ca.content)
-                .replace("%CERT%", data.cert.content)
-                .replace("%KEY%", data.key.content);
+                .replace("%CA%", data.ca)
+                .replace("%CERT%", data.cert)
+                .replace("%KEY%", data.key);
 
             if (variant === "legacy") {
                 // Comment out line starts with "data-ciphers"
@@ -158,7 +164,7 @@ const buildRouter = (ipinfoToken: string) => {
             }
 
             if (typeof split !== "undefined") {
-                config = `${config}${PATCH}`;
+                config = `${config}${variant === "beta" ? BETA_PATCH : CURRENT_PATCH}`;
             }
 
             return createResponse("application/x-openvpn-profile")(config, {
