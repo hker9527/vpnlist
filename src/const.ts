@@ -1,6 +1,7 @@
 export const SITES = [
     "uma",
-    "dmm"
+    "dmm",
+    "umag"
 ] as const;
 
 export type Site = typeof SITES[number];
