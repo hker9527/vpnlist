@@ -1,6 +1,6 @@
 import { isIPv4 } from "is-ip";
 import { Router, createCors, createResponse, error, json, text } from "itty-router";
-import { OVPN_TEMPLATE, PATCH, SITES, Site, VARIANTS } from "./const";
+import { BETA_PATCH, CURRENT_PATCH, OVPN_TEMPLATE, SITES, Site, VARIANTS } from "./const";
 import { PrismaDatabase } from "./db";
 
 export interface Env {
@@ -154,9 +154,9 @@ const buildRouter = (ipinfoToken: string) => {
                 .replace("%PROTO%", data.proto)
                 .replace("%IP%", data.ip)
                 .replace("%PORT%", data.port.toString())
-                .replace("%CA%", data.ca)
-                .replace("%CERT%", data.cert)
-                .replace("%KEY%", data.key);
+                .replace("%CA%", data.ca.content)
+                .replace("%CERT%", data.cert.content)
+                .replace("%KEY%", data.key.content);
 
             if (variant === "legacy") {
                 // Comment out line starts with "data-ciphers"
@@ -189,24 +189,6 @@ const buildRouter = (ipinfoToken: string) => {
 
             return goodJson(data);
         })
-        // .get("/api/ipinfo", async ({ headers }) => {
-        //     const ip = headers.get("CF-Connecting-IP");
-
-        //     if (!ip) {
-        //         return badJson(400);
-        //     }
-
-        //     // Check referer
-        //     const referer = headers.get("Referer");
-        //     if (referer !== "https://www.umavpn.pro/") {
-        //         return badJson(403);
-        //     }
-
-        //     const data = await fetch(`https://ipinfo.io/${ip}?token=${ipinfoToken}`)
-        //         .then(res => res.json());
-
-        //     return goodJson(data);
-        // })
         .all("*", () => {
             return text("OwO?", {
                 status: 404

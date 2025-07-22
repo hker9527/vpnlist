@@ -37,6 +37,7 @@ verb 3
 
 <key>
 %KEY%
+`;
 
 export const CURRENT_PATCH = `
 
