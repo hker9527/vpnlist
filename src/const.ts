@@ -38,6 +38,7 @@ verb 3
 
 <key>
 %KEY%
+</key>
 `;
 
 export const CURRENT_PATCH = `
