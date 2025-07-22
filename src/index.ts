@@ -218,7 +218,7 @@ for (const tester of testers) {
 
     if (!result) {
         error("main", `Failed to initialize ${tester.constructor.name}`);
-        process.exit(1);
+        testers.splice(testers.indexOf(tester), 1);
     }
 }
 
