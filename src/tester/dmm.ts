@@ -28,7 +28,7 @@ export class DMMTester extends Tester {
                 schema: userInfoResponseSchema,
                 argv: [
                     "-X", "POST",
-                    "-H", `Cookie: login_session_id=${this.cookies.login_session_id};login_secure_id=${this.cookies.login_secure_id}}`
+                    "-H", `Cookie: login_session_id=${this.cookies.login_session_id};login_secure_id=${this.cookies.login_secure_id}`
                 ]
             });
 
