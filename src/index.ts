@@ -20,8 +20,6 @@ const testers = [
 const test = async (server: VPNGateServer) => {
     let ret: ServerResult | null = null;
 
-    debug("main", `Server ${server.ip} has speed ${server.speed}Mbps`);
-
     // Patch the config we use to use route-nopull,
     // which prevents openvpn from changing the routing table
     const _config = server.config + "\r\nroute-nopull";
@@ -95,7 +93,7 @@ const test = async (server: VPNGateServer) => {
     ]);
 
     if (device === null) {
-        debug("main", `Failed to connect to ${server.ip}`);
+        log("main", `Failed to connect to ${server.ip}`);
     } else {
         debug("main", `Connected to ${server.ip} on device ${device}`);
 
@@ -103,11 +101,7 @@ const test = async (server: VPNGateServer) => {
         const results: SiteResult[] = await Promise.all(testers.map(async (tester) => tester.test(device)));
 
         for (const result of results) {
-            if (result.success) {
-                debug("main", `Site ${result.site}: ${result.duration}ms`);
-            } else {
-                debug("main", `Site ${result.site}: Failed`);
-            }
+            log("main", `Site ${result.site}: ${result.success ? `Success (${result.duration}ms)` : "Failed"}`);
         }
 
         // Get IP info
@@ -211,7 +205,7 @@ const test = async (server: VPNGateServer) => {
         debug("main", `Failed to kill process ${proc.pid}`);
     }
 
-    debug("main", `Finished testing ${server.ip}`);
+    log("main", `Finished testing ${server.ip}`);
 
     return ret;
 };
@@ -219,7 +213,7 @@ const test = async (server: VPNGateServer) => {
 log("main", "Initializing testers...");
 
 for (const tester of testers) {
-    debug("main", `Initializing ${tester.constructor.name}...`);
+    log("main", `Initializing ${tester.constructor.name}...`);
     const result = await tester.init();
 
     if (!result) {
@@ -250,7 +244,7 @@ log("main", `Testing ${servers.length} servers...`);
 for (const server of servers) {
     try {
         if (await database.isServerCheckedRecently(server.ip)) {
-            debug("main", `Skipping ${server.ip} because it was checked recently`);
+            log("main", `Skipping ${server.ip} because it was checked recently`);
             serverSkipped++;
             continue;
         }
