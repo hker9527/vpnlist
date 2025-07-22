@@ -9,9 +9,11 @@ import { ServerResult } from "./type/ServerResult";
 import { SiteResult } from "./type/SiteResult";
 import { VPNGateServer } from "./type/VPNGateServer";
 import { timeoutPromise } from "./utils";
+import { UmaGlobalTester } from "./tester/umag";
 
 const testers = [
     new UmaTester(),
+    new UmaGlobalTester(),
     new DMMTester()
 ];
 
