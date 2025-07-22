@@ -157,26 +157,35 @@
                     <Menu bind:this={menu}>
                         <List>
                             <SelectionGroup>
-                                {#each ["current", "legacy"] as _variant}
+                                {#each [
+                                    {
+                                        type: "beta",
+                                        requirement: ">2.7.0",
+                                    },
+                                    {
+                                        type: "current",
+                                        requirement: "2.6.0 - 2.6.9",
+                                    },
+                                    {
+                                        type: "legacy",
+                                        requirement: "<2.6.0"
+                                    }
+                                ] as thing (thing.type)}
                                     <Item
                                         on:SMUI:action={() => {
-                                            variant = _variant;
+                                            variant = thing.type;
                                         }}
-                                        selected={_variant === variant}
+                                        selected={thing.type === variant}
                                     >
                                         <SelectionGroupIcon>
                                             <i class="material-icons">check</i>
                                         </SelectionGroupIcon>
                                         <Text>
                                             <PrimaryText>
-                                                {_variant === "current"
-                                                    ? "Current"
-                                                    : "Legacy"}
+                                                { thing.type.charAt(0).toUpperCase() + thing.type.slice(1) }
                                             </PrimaryText>
                                             <SecondaryText>
-                                                {_variant === "current"
-                                                    ? "v2.6.0 or above"
-                                                    : "below v2.6.0"}
+                                                Version { thing.requirement }
                                             </SecondaryText>
                                         </Text>
                                     </Item>
