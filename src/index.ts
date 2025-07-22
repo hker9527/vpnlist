@@ -40,31 +40,6 @@ const buildRouter = (ipinfoToken: string) => {
 
     return router
         .all("*", preflight)
-        .get("/api/site/:site", async ({ params, query }) => {
-            const site = params.site as Site;
-            const { take, orderBy } = query;
-
-            if (!(SITES.includes(site))) {
-                return badJson(400);
-            }
-
-            if (typeof take !== "undefined" && isNaN(Number(take))) {
-                return badJson(400);
-            }
-
-            if (
-                typeof orderBy === "object"
-                || typeof orderBy === "string" && !["timestamp", "duration", "speed"].includes(orderBy)
-            ) {
-                return badJson(400);
-            }
-
-            return goodJson(await database.getTestResultsBySite(
-                site,
-                Math.min(Math.max(Number(take) || 20, 1), 50),
-                orderBy as "timestamp" | "duration" | "speed" || "timestamp"
-            ));
-        })
         .get("/api/server", async ({ query }) => {
             // Newer version of getting a list of profiles.
             // Query list:
