@@ -6,6 +6,7 @@
 	const siteVariants: Record<string, "raised" | "outlined"> = {
 		uma: "raised",
 		dmm: "outlined",
+		umag: "outlined",
 	};
 
 	const _onClick = async (site: string) => {

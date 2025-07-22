@@ -1,6 +1,7 @@
 export const list: Record<string, string> = {
-    "uma": "Umamusume",
-    "dmm": "DMM"
+    "uma": "Umamusume (Japanese)",
+    "dmm": "DMM",
+    "umag": "Umamusume (Global)"
 };
 
 export class Site {
