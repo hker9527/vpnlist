@@ -1,5 +1,6 @@
 name = "vpnlist"
 account_id = "13749f76e28ce5aa78fc904c47ce17e7"
 main = "src/index.ts"
-compatibility_date = "2023-09-04"
+compatibility_flags = [ "nodejs_compat" ]
+compatibility_date = "2024-09-23"
 workers_dev = true

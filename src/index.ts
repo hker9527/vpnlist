@@ -1,11 +1,13 @@
 import { isIPv4 } from "is-ip";
 import { Router, createCors, createResponse, error, json, text } from "itty-router";
-import { BETA_PATCH, CURRENT_PATCH, OVPN_TEMPLATE, SITES, Site, VARIANTS } from "./const";
-import { PrismaDatabase } from "./db";
+import { BETA_PATCH, CURRENT_PATCH, OVPN_TEMPLATE, SITES, Site, VARIANTS, Variant } from "./const";
+import { ServerRepository } from "./repositories/ServerRepository";
+import { ResultRepository } from "./repositories/ResultRepository";
+import { StatisticRepository } from "./repositories/StatisticRepository";
+import { OVPNBuilder } from "./services/OVPNBuilder";
 
 export interface Env {
-    IPINFO_TOKEN: string;
-    DATABASE_URL: string;
+    DIRECT_URL: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -13,7 +15,7 @@ interface BigInt {
     /** Convert to BigInt to string form in JSON.stringify */
     toJSON: () => string;
 }
-(BigInt.prototype as any).toJSON = function() {
+(BigInt.prototype as any).toJSON = function () {
     return this.toString()
 }
 
@@ -35,7 +37,7 @@ const goodJson = <T>(data: T) => {
     });
 };
 
-const buildRouter = (ipinfoToken: string) => {
+const buildRouter = () => {
     const router = Router();
 
     return router
@@ -64,7 +66,7 @@ const buildRouter = (ipinfoToken: string) => {
                 return badJson(400);
             }
 
-            return goodJson(await database.getServers(
+            return goodJson(await resultRepository.getResultsBySites(
                 _sites ?? [],
                 Math.min(Math.max(Number(take) || 20, 1), 50),
                 orderBy as "timestamp" | "duration" | "speed" || "timestamp"
@@ -77,7 +79,7 @@ const buildRouter = (ipinfoToken: string) => {
                 return badJson(400);
             }
 
-            const data = await database.getServerByIp(ip);
+            const data = await serverRepository.getServerByIp(ip);
 
             if (!data) {
                 return badJson(404);
@@ -92,59 +94,31 @@ const buildRouter = (ipinfoToken: string) => {
             if (
                 !isIPv4(ip)
                 || typeof variant !== "string"
-                || typeof variant === "string" && !VARIANTS.includes(variant)
+                || typeof variant === "string" && !VARIANTS.includes(variant as Variant)
                 || !["string", "undefined"].includes(typeof split)
             ) {
                 return badJson(400);
             }
 
-            const data = await database.getServerConfigByIp(ip);
+            const data = await serverRepository.getServerConfigByIp(ip);
 
             if (!data) {
                 return badJson(404);
             }
 
-            const generateDateTimeString = () => {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth() + 1;
-                const date = now.getDate();
-                const hour = now.getHours();
-                const minute = now.getMinutes();
-                const second = now.getSeconds();
+            const { filename, content } = new OVPNBuilder()
+                .setTime(new Date().toISOString())
+                .setProto(data.proto)
+                .setIp(data.ip)
+                .setPort(data.port)
+                .setCa(data.ca)
+                .setCert(data.cert)
+                .setKey(data.key)
+                .build(variant as Variant, split as string);
 
-                return `${year}${month.toString().padStart(2, "0")}${date.toString().padStart(2, "0")}-${hour.toString().padStart(2, "0")}${minute.toString().padStart(2, "0")}${second.toString().padStart(2, "0")}`;
-            }
-
-            const shortCode = {
-                legacy: "L",
-                current: "C",
-                beta: "B"
-            }[variant];
-
-            const fileName = `NasuVPN-${generateDateTimeString()}-${ip}-${shortCode}${typeof split !== "undefined" ? "S" : "O"}.ovpn`;
-
-            let config = OVPN_TEMPLATE
-                .replace("%TIME%", new Date().toISOString())
-                .replace("%PROTO%", data.proto)
-                .replace("%IP%", data.ip)
-                .replace("%PORT%", data.port.toString())
-                .replace("%CA%", data.ca.content)
-                .replace("%CERT%", data.cert.content)
-                .replace("%KEY%", data.key.content);
-
-            if (variant === "legacy") {
-                // Comment out line starts with "data-ciphers"
-                config = config.replace(/^data-ciphers.+/m, "# $&");
-            }
-
-            if (typeof split !== "undefined") {
-                config = `${config}${variant === "beta" ? BETA_PATCH : CURRENT_PATCH}`;
-            }
-
-            return createResponse("application/x-openvpn-profile")(config, {
+            return createResponse("application/x-openvpn-profile")(content, {
                 headers: {
-                    "Content-Disposition": `attachment; filename="${fileName}"`,
+                    "Content-Disposition": `attachment; filename="${filename}"`,
                     "Cache-Control": "public, max-age=86400"
                 }
             });
@@ -156,7 +130,7 @@ const buildRouter = (ipinfoToken: string) => {
                 return badJson(400);
             }
 
-            const data = await database.getSuccessRatesBySite(site);
+            const data = await statisticRepository.getSuccessRatesBySite(site);
 
             if (!data) {
                 return badJson(404);
@@ -171,20 +145,17 @@ const buildRouter = (ipinfoToken: string) => {
         });
 }
 
-let database!: PrismaDatabase;
-let router!: ReturnType<typeof buildRouter>;
+let serverRepository!: ServerRepository;
+let resultRepository!: ResultRepository;
+let statisticRepository!: StatisticRepository;
 
 export default {
     fetch: async (request: Request, env: Env) => {
-        if (!database) {
-            database = new PrismaDatabase(env.DATABASE_URL);
-        }
+        serverRepository = new ServerRepository(env.DIRECT_URL);
+        resultRepository = new ResultRepository(env.DIRECT_URL);
+        statisticRepository = new StatisticRepository(env.DIRECT_URL);
 
-        if (!router) {
-            router = buildRouter(env.IPINFO_TOKEN);
-        }
-
-        return router
+        return buildRouter()
             .handle(request)
             .catch(error)
             .then(corsify);
