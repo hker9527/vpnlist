@@ -1,6 +1,6 @@
 import { isIPv4 } from "is-ip";
 import { Router, createCors, createResponse, error, json, text } from "itty-router";
-import { BETA_PATCH, CURRENT_PATCH, OVPN_TEMPLATE, SITES, Site, VARIANTS, Variant } from "./const";
+import { SITES, Site, VARIANTS, Variant } from "./const";
 import { ServerRepository } from "./repositories/ServerRepository";
 import { ResultRepository } from "./repositories/ResultRepository";
 import { StatisticRepository } from "./repositories/StatisticRepository";
