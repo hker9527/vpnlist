@@ -21,9 +21,20 @@
 	};
 
 	let siteResult: SiteResult | null = null;
+	let fetching = false;
 
 	const fetchResult = async () => {
+		if (fetching) return; // Prevent multiple fetches
+
+		fetching = true;
 		siteResult = null;
+
+		setTimeout(() => {
+			if (fetching) {
+				siteResult = [];
+				fetching = false;
+			}
+		}, 10000); // Timeout after 10 seconds
 
 		const url = new URL(`${HOST}/api/server`);
 		for (const site of options.sites) {
@@ -43,6 +54,8 @@
 		} else {
 			alert(ZSiteAPIResponse.reason(json));
 		}
+
+		fetching = false;
 	};
 
 	const onSitesChange = async (sites: string[]) => {
@@ -118,8 +131,8 @@
 					{/each}
 				</Accordion>
 			{:else}
-				<div>No servers found, probably something went wrong...</div>
-				<div>Ping the author on Discord!</div>
+				<div>No servers found!</div>
+				<div>If you believe this is wrong, ping the author on Discord!</div>
 			{/if}
 		{:else}
 			<div class="loading">
