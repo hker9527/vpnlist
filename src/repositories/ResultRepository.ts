@@ -18,7 +18,7 @@ export class ResultRepository extends Repository {
                             MIN(speed) AS speed
                         FROM "ServerListView"
                         GROUP BY ip, country
-                        ORDER BY ${orderBy} ${orderBy === "duration" ? this.client`ASC` : this.client`DESC`}
+                        ORDER BY ${this.client(orderBy)} ${orderBy === "duration" ? this.client`ASC` : this.client`DESC`}
                     `;
                 case 1:
                     return await this.client`
@@ -31,7 +31,7 @@ export class ResultRepository extends Repository {
                         FROM "ServerListView"
                         WHERE site = ${sites[0]}
                         GROUP BY ip, country
-                        ORDER BY ${orderBy} ${orderBy === "duration" ? this.client`ASC` : this.client`DESC`}
+                        ORDER BY ${this.client(orderBy)} ${orderBy === "duration" ? this.client`ASC` : this.client`DESC`}
                     `;
                 default:
                     return await this.client`
@@ -42,10 +42,10 @@ export class ResultRepository extends Repository {
                             MIN(duration) AS duration,
                             MIN(speed) AS speed
                         FROM "ServerListView"
-                        WHERE site IN ${ this.client(sites) }
+                        WHERE site IN ${this.client(sites)}
                         GROUP BY ip, country
                         HAVING COUNT(DISTINCT site) = ${sites.length}
-                        ORDER BY ${orderBy} ${orderBy === "duration" ? this.client`ASC` : this.client`DESC`}
+                        ORDER BY ${this.client(orderBy)} ${orderBy === "duration" ? this.client`ASC` : this.client`DESC`}
                     `;
             }
         })();
