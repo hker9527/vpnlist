@@ -7,7 +7,7 @@ export class StatisticRepository extends Repository {
                 *
             FROM "SuccessRateView"
             WHERE site = ${site}
-            GROUP BY site, country
+            GROUP BY site, country, success, fail
         `;
 
         return result.map(row => ({
