@@ -13,8 +13,8 @@ export class StatisticRepository extends Repository {
         return result.map(row => ({
             site: row.site,
             country: row.country,
-            success: row.success,
-            fail: row.fail
+            success: Number(row.success),
+            fail: Number(row.fail)
         }));
     }
 }
