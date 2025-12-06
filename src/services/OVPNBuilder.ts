@@ -35,6 +35,7 @@ const ROUTE_PATCH = `
 route-nopull
 
 route api-umamusume.cygames.jp
+route api.games.umamusume.jp
 route prd-storage-app-umamusume.akamaized.net
 route prd-storage-game-umamusume.akamaized.net
 route prd-info-umamusume.akamaized.net
@@ -46,6 +47,7 @@ const DNS_PATCH = `
 
 # DNS patch (Beta)
 dns search-domains api-umamusume.cygames.jp
+dns search-domains api.games.umamusume.jp
 dns search-domains prd-storage-app-umamusume.akamaized.net
 dns search-domains prd-storage-game-umamusume.akamaized.net
 dns search-domains prd-info-umamusume.akamaized.net
