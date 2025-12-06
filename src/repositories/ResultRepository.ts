@@ -1,11 +1,10 @@
 import { Repository } from ".";
+import { type ServerListRequest } from "../schemas/ServerListRequest";
 
 export class ResultRepository extends Repository {
-    public async getResultsBySites(
-        sites: string[],
-        take = 20,
-        orderBy: "timestamp" | "duration" | "speed" = "timestamp"
-    ) {
+    public async getResultsBySites(argv: ServerListRequest) {
+        const { sites = [], take, orderBy, country } = argv;
+        
         const result = await (async () => {
             switch (sites.length) {
                 case 0:
@@ -17,6 +16,8 @@ export class ResultRepository extends Repository {
                             MIN(duration) AS duration,
                             MIN(speed) AS speed
                         FROM "ServerListView"
+                        WHERE 
+                            ${country ? this.client`country = ${country}` : this.client`TRUE`}
                         GROUP BY ip, country
                         ORDER BY ${this.client(orderBy)} ${orderBy === "duration" ? this.client`ASC` : this.client`DESC`}
                     `;
@@ -29,7 +30,9 @@ export class ResultRepository extends Repository {
                             MIN(duration) AS duration,
                             MIN(speed) AS speed
                         FROM "ServerListView"
-                        WHERE site = ${sites[0]}
+                        WHERE 
+                            site = ${sites[0]}
+                            AND ${country ? this.client`country = ${country}` : this.client`TRUE`}
                         GROUP BY ip, country
                         ORDER BY ${this.client(orderBy)} ${orderBy === "duration" ? this.client`ASC` : this.client`DESC`}
                     `;
@@ -42,7 +45,9 @@ export class ResultRepository extends Repository {
                             MIN(duration) AS duration,
                             MIN(speed) AS speed
                         FROM "ServerListView"
-                        WHERE site IN ${this.client(sites)}
+                        WHERE
+                            site IN ${this.client(sites)}
+                            AND ${country ? this.client`country = ${country}` : this.client`TRUE`}
                         GROUP BY ip, country
                         HAVING COUNT(DISTINCT site) = ${sites.length}
                         ORDER BY ${this.client(orderBy)} ${orderBy === "duration" ? this.client`ASC` : this.client`DESC`}
