@@ -72,7 +72,7 @@ export class OVPNBuilder {
         }[variant];
     }
 
-    #getTypeShortCode(split?: string) {
+    #getTypeShortCode(split?: boolean) {
         return typeof split !== "undefined" ? "S" : "O";
     }
     
@@ -111,7 +111,7 @@ export class OVPNBuilder {
         return this;
     }
 
-    public build(variant: Variant, split?: string) {
+    public build(variant: Variant, split?: boolean) {
         let config = OVPN_TEMPLATE
             .replace("%TIME%", this.#time)
             .replace("%PROTO%", this.#proto)

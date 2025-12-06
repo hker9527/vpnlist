@@ -14,6 +14,7 @@
   "dependencies": {
     "is-ip": "^5.0.1",
     "itty-router": "^4.2.2",
-    "postgres": "^3.4.7"
+    "postgres": "^3.4.7",
+    "zod": "^4.1.13"
   }
 }
