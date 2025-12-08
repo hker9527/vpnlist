@@ -1,4 +1,4 @@
-const list: Record<string, string> = {
+export const list: Record<string, string> = {
     "AF": "Afghanistan",
     "AX": "Aland Islands",
     "AL": "Albania",

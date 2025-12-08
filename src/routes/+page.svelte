@@ -2,7 +2,7 @@
 	import Server from "@components/Server.svelte";
 	import SitePickerMultiple from "@components/SitePickerMultiple.svelte";
 	import { HOST } from "@lib/const";
-	import { CountryCode } from "@lib/CountryCode";
+	import { CountryCode, list } from "@lib/CountryCode";
 	import {
 	    ZSiteAPIResponse,
 	    type SiteResult,
@@ -12,20 +12,15 @@
 	import Select, { Option } from "@smui/select";
 	import TextField from "@smui/textfield";
 	import { onMount } from "svelte";
+    import { Settings } from "~/lib/LocalStorage";
 
-	const options = {
-		sites: ["uma"],
-		country: "",
-		take: 20,
-		orderBy: "timestamp"
-	};
+	const settings = new Settings();
+	const options = settings.load();
 
 	let siteResult: SiteResult | null = null;
 	let fetching = false;
 
 	const fetchResult = async () => {
-		if (fetching) return; // Prevent multiple fetches
-
 		fetching = true;
 		siteResult = null;
 
@@ -42,6 +37,9 @@
 		}
 		url.searchParams.append("take", options.take.toString());
 		url.searchParams.append("orderBy", options.orderBy);
+		if (options.country !== null) {
+			url.searchParams.append("country", options.country);
+		}
 
 		const res = await fetch(url);
 		const json = await res.json();
@@ -58,14 +56,10 @@
 		fetching = false;
 	};
 
-	const onSitesChange = async (sites: string[]) => {
-		options.sites = sites;
-		await fetchResult();
-	};
-
 	onMount(fetchResult);
 
-	const onChange = async () => {
+	const onApply = async () => {
+		settings.save(options);
 		await fetchResult();
 	};
 </script>
@@ -79,14 +73,27 @@
 				class="w-100"
 				label="Country"
 			>
-				<Option value={null} />
-				{#if siteResult}
-					{#each [...new Set(siteResult.map((r) => r.country))] as country}
-						<Option value={country}>
-							{new CountryCode(country).toString()}
-						</Option>
-					{/each}
-				{/if}
+				<Option value={null}>
+					All countries
+				</Option>
+				{#each Object.keys(list).sort((a, b) => {
+					const precedence = ["JP", "US"];
+					const aIndex = precedence.indexOf(a);
+					const bIndex = precedence.indexOf(b);
+					if (aIndex !== -1 && bIndex !== -1) {
+						return aIndex - bIndex;
+					} else if (aIndex !== -1) {
+						return -1;
+					} else if (bIndex !== -1) {
+						return 1;
+					} else {
+						return 0;
+					}
+				}) as country}
+					<Option value={country}>
+						{new CountryCode(country).toString()}
+					</Option>
+				{/each}
 			</Select>
 
 			<TextField
@@ -110,12 +117,12 @@
 		</div>
 		<div class="col-12 col-md-4 p-4">
 			Required sites:
-			<SitePickerMultiple onChange={onSitesChange} />
+			<SitePickerMultiple bind:selected={options.sites} />
 		</div>
 	</div>
 	<Button
 		class="w-100"
-		on:click={() => onChange()}
+		on:click={() => onApply()}
 	>
 		Apply
 	</Button>
@@ -125,9 +132,7 @@
 			{#if siteResult.length > 0}
 				<Accordion multiple>
 					{#each siteResult as result}
-						{#if !options.country || options.country === result.country}
-							<Server {result} />
-						{/if}
+						<Server {result} />
 					{/each}
 				</Accordion>
 			{:else}

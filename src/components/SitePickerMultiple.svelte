@@ -4,13 +4,8 @@
 	import FormField from "@smui/form-field";
 	import Switch from "@smui/switch";
 
-	export let onChange: (sites: string[]) => Promise<void>;
-
 	let options = Object.keys(siteList);
-
-	let selected: string[] = ["uma"];
-
-	$: onChange(selected);
+	export let selected: string[] = ["uma"];
 </script>
 
 <main>
