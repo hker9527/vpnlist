@@ -16,7 +16,7 @@
 	import { toast } from "@zerodevx/svelte-toast";
 
 	const settings = new Settings();
-	const options = settings.load();
+	let options = settings.load();
 	let optionChanged = false;
 
 	let siteResult: SiteResult | null = null;
@@ -26,7 +26,7 @@
 		fetching = true;
 		siteResult = null;
 
-		setTimeout(() => {
+		const timeout = setTimeout(() => {
 			if (fetching) {
 				siteResult = [];
 				fetching = false;
@@ -56,6 +56,7 @@
 		}
 
 		fetching = false;
+		clearTimeout(timeout);
 	};
 
 	onMount(fetchResult);
