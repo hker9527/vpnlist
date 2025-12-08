@@ -128,6 +128,15 @@
 				bind:selected={options.sites}
 				oninput={() => (optionChanged = true)}
 			/>
+			<Button
+				class="w-100 mt-2"
+				variant="outlined"
+				on:click={() => {
+					settings.reset();
+					options = settings.load();
+					optionChanged = true;
+				}}
+			>Reset</Button>
 		</div>
 	</div>
 	<Button

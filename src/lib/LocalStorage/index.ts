@@ -36,6 +36,11 @@ export class Settings {
 		localStorage.setItem("settings", JSON.stringify(this.#settings));
 	}
 
+	#reset() {
+		localStorage.removeItem("version");
+		localStorage.removeItem("settings");
+	}
+
 	load(): Shape {
 		return this.#settings;
 	}
@@ -43,5 +48,10 @@ export class Settings {
 	save(settings: Shape) {
 		this.#settings = settings;
 		this.#save();
+	}
+
+	reset() {
+		this.#settings = defaultSettings;
+		this.#reset();
 	}
 };
