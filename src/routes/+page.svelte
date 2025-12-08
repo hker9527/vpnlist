@@ -13,6 +13,7 @@
 	import TextField from "@smui/textfield";
 	import { onMount } from "svelte";
     import { Settings } from "~/lib/LocalStorage";
+	import { toast } from "@zerodevx/svelte-toast";
 
 	const settings = new Settings();
 	const options = settings.load();
@@ -59,6 +60,7 @@
 	onMount(fetchResult);
 
 	const onApply = async () => {
+		toast.push("Autosaving settings...");
 		settings.save(options);
 		await fetchResult();
 	};

@@ -10,6 +10,7 @@
 	    Title,
 	} from "@smui/top-app-bar";
 	import { polyfillCountryFlagEmojis } from "country-flag-emoji-polyfill";
+	import { SvelteToast } from "@zerodevx/svelte-toast";
 	import { onMount } from "svelte";
 	
 	polyfillCountryFlagEmojis();
@@ -74,6 +75,7 @@
 			<slot />
 		</AppContent>
 	</AutoAdjust>
+	<SvelteToast />
 </main>
 
 <style>
