@@ -17,6 +17,7 @@
 
 	const settings = new Settings();
 	const options = settings.load();
+	let optionChanged = false;
 
 	let siteResult: SiteResult | null = null;
 	let fetching = false;
@@ -62,6 +63,7 @@
 	const onApply = async () => {
 		toast.push("Autosaving settings...");
 		settings.save(options);
+		optionChanged = false;
 		await fetchResult();
 	};
 </script>
@@ -72,6 +74,7 @@
 			Filters:
 			<Select
 				bind:value={options.country}
+				on:change={() => (optionChanged = true)}
 				class="w-100"
 				label="Country"
 			>
@@ -100,6 +103,7 @@
 
 			<TextField
 				bind:value={options.take}
+				on:input={() => (optionChanged = true)}
 				class="w-100"
 				label="Result count"
 				input$min="1"
@@ -109,6 +113,7 @@
 
 			<Select
 				bind:value={options.orderBy}
+				on:change={() => (optionChanged = true)}
 				class="w-100"
 				label="Order by"
 			>
@@ -119,12 +124,16 @@
 		</div>
 		<div class="col-12 col-md-4 p-4">
 			Required sites:
-			<SitePickerMultiple bind:selected={options.sites} />
+			<SitePickerMultiple 
+				bind:selected={options.sites}
+				oninput={() => (optionChanged = true)}
+			/>
 		</div>
 	</div>
 	<Button
 		class="w-100"
 		on:click={() => onApply()}
+		disabled={!optionChanged || fetching}
 	>
 		Apply
 	</Button>
