@@ -75,11 +75,13 @@
 			Filters:
 			<Select
 				bind:value={options.country}
-				on:change={() => (optionChanged = true)}
 				class="w-100"
 				label="Country"
 			>
-				<Option value={null}>
+				<Option
+					value={null}
+					on:click={() => (optionChanged = true)}
+				>
 					All countries
 				</Option>
 				{#each Object.keys(list).sort((a, b) => {
@@ -96,7 +98,10 @@
 						return 0;
 					}
 				}) as country}
-					<Option value={country}>
+					<Option 
+						value={country}
+						on:click={() => (optionChanged = true)}
+					>
 						{new CountryCode(country).toString()}
 					</Option>
 				{/each}
@@ -118,9 +123,18 @@
 				class="w-100"
 				label="Order by"
 			>
-				<Option value="timestamp" selected>Most recent</Option>
-				<Option value="duration">Lowest ping</Option>
-				<Option value="speed">Fastest speed</Option>
+				{#each [
+					{ value: "timestamp", label: "Most recent" },
+					{ value: "duration", label: "Lowest ping" },
+					{ value: "speed", label: "Fastest speed" },
+				] as orderOption}
+					<Option
+						value={orderOption.value}
+						on:click={() => (optionChanged = true)}
+					>
+						{orderOption.label}
+					</Option>
+				{/each}
 			</Select>
 		</div>
 		<div class="col-12 col-md-4 p-4">
