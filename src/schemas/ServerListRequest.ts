@@ -2,7 +2,15 @@ import { z } from "zod";
 import { COUNTRY_CODES, SITES } from "../const";
 
 export const ServerListRequestSchema = z.object({
-    sites: z.enum(SITES).array().optional(),
+    sites: z.preprocess((val) => {
+        if (val === undefined) {
+            return undefined;
+        }
+        if (Array.isArray(val)) {
+            return val;
+        }
+        return [val];
+    }, z.enum(SITES).array()).optional(),
     take: z.coerce.number().min(1).max(100),
     orderBy: z.enum(["timestamp", "duration", "speed"]).default("timestamp"),
     country: z.enum(COUNTRY_CODES).optional()
