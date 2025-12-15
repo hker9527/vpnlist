@@ -1,0 +1,1 @@
+export const orderByOptions = ["timestamp", "duration", "speed"] as const;

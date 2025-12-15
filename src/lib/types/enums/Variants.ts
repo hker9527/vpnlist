@@ -1,0 +1,1 @@
+export const variants = ["beta", "current", "legacy"] as const;
