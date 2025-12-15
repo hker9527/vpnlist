@@ -12,12 +12,7 @@
 	import Select, { Option } from "@smui/select";
 	import TextField from "@smui/textfield";
 	import { onMount } from "svelte";
-    import { Settings } from "~/lib/LocalStorage";
-	import { toast } from "@zerodevx/svelte-toast";
-
-	const settings = new Settings();
-	let options = settings.load();
-	let optionChanged = false;
+    import { settings } from "~/lib/stores/settings";
 
 	let siteResult: SiteResult | null = null;
 	let fetching = false;
@@ -34,13 +29,13 @@
 		}, 10000); // Timeout after 10 seconds
 
 		const url = new URL(`${HOST}/api/server`);
-		for (const site of options.sites) {
+		for (const site of $settings.sites) {
 			url.searchParams.append("sites", site);
 		}
-		url.searchParams.append("take", options.take.toString());
-		url.searchParams.append("orderBy", options.orderBy);
-		if (options.country !== null) {
-			url.searchParams.append("country", options.country);
+		url.searchParams.append("take", $settings.take.toString());
+		url.searchParams.append("orderBy", $settings.orderBy);
+		if ($settings.country !== null) {
+			url.searchParams.append("country", $settings.country);
 		}
 
 		const res = await fetch(url);
@@ -62,9 +57,6 @@
 	onMount(fetchResult);
 
 	const onApply = async () => {
-		toast.push("Autosaving settings...");
-		settings.save(options);
-		optionChanged = false;
 		await fetchResult();
 	};
 </script>
@@ -74,16 +66,11 @@
 		<div class="col-12 col-md-8 p-4">
 			Filters:
 			<Select
-				bind:value={options.country}
+				bind:value={$settings.country}
 				class="w-100"
 				label="Country"
 			>
-				<Option
-					value={null}
-					on:click={() => (optionChanged = true)}
-				>
-					All countries
-				</Option>
+				<Option value={null}>All countries</Option>
 				{#each Object.keys(list).sort((a, b) => {
 					const precedence = ["JP", "US"];
 					const aIndex = precedence.indexOf(a);
@@ -98,18 +85,14 @@
 						return 0;
 					}
 				}) as country}
-					<Option 
-						value={country}
-						on:click={() => (optionChanged = true)}
-					>
+					<Option value={country}>
 						{new CountryCode(country).toString()}
 					</Option>
 				{/each}
 			</Select>
 
 			<TextField
-				bind:value={options.take}
-				on:input={() => (optionChanged = true)}
+				bind:value={$settings.take}
 				class="w-100"
 				label="Result count"
 				input$min="1"
@@ -118,8 +101,7 @@
 			/>
 
 			<Select
-				bind:value={options.orderBy}
-				on:change={() => (optionChanged = true)}
+				bind:value={$settings.orderBy}
 				class="w-100"
 				label="Order by"
 			>
@@ -130,7 +112,6 @@
 				] as orderOption}
 					<Option
 						value={orderOption.value}
-						on:click={() => (optionChanged = true)}
 					>
 						{orderOption.label}
 					</Option>
@@ -140,16 +121,13 @@
 		<div class="col-12 col-md-4 p-4">
 			Required sites:
 			<SitePickerMultiple 
-				bind:selected={options.sites}
-				oninput={() => (optionChanged = true)}
+				bind:selected={$settings.sites}
 			/>
 			<Button
 				class="w-100 mt-2"
 				variant="outlined"
 				on:click={() => {
 					settings.reset();
-					options = settings.load();
-					optionChanged = true;
 				}}
 			>Reset</Button>
 		</div>
@@ -157,7 +135,7 @@
 	<Button
 		class="w-100"
 		on:click={() => onApply()}
-		disabled={!optionChanged || fetching}
+		disabled={fetching}
 	>
 		Apply
 	</Button>

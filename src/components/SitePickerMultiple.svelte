@@ -6,14 +6,13 @@
 
 	let options = Object.keys(siteList);
 	export let selected: string[] = ["uma"];
-	export let oninput: (() => void);
 </script>
 
 <main>
 	{#each options as option}
 		<div>
 			<FormField>
-				<Switch bind:group={selected} value={option} on:click={() => oninput()} />
+				<Switch bind:group={selected} value={option} />
 				<span slot="label">
 					<Label>
 						<img src="/{option}.png" alt="" />
