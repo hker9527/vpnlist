@@ -95,9 +95,10 @@
 				bind:value={$settings.take}
 				class="w-100"
 				label="Result count"
+				type="number"
 				input$min="1"
 				input$max="100"
-				input$step="10"
+				input$step="1"
 			/>
 
 			<Select
