@@ -1,0 +1,1 @@
+export type Variant = "beta" | "current" | "legacy";

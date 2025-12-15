@@ -1,8 +1,11 @@
 import { BaseMigration } from "./migrations";
-import { type Shape, defaultSettings, Migration as Migration001 } from "./migrations/001_init";
+import { Migration as Migration001 } from "./migrations/001_init";
+import { Migration as Migration002 } from "./migrations/002_save_download_option";
+import { type Shape, defaultSettings } from "./migrations/latest";
 
 const migrations = [
-	new Migration001()
+	new Migration001(),
+	new Migration002()
 ] as BaseMigration[];
 
 export class Settings {
