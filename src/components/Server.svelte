@@ -66,9 +66,12 @@
     let variant = "current";
     let split = false;
     const getDownloadLink = () => {
-        return `${HOST}/api/server/${
-            result.ip
-        }/config?variant=${variant}${split ? "&split" : ""}`;
+        const url = new URL(`${HOST}/api/server/${result.ip}/config`);
+        url.searchParams.set("variant", variant);
+        if (split) {
+            url.searchParams.set("split", "true");
+        }
+        return url.toString();
     };
 
     const initMap = async () => {
