@@ -20,8 +20,12 @@
     import "leaflet/dist/leaflet.css";
     import { CountryCode } from "../lib/CountryCode";
     import type { SiteResult } from "../lib/types/api/SiteAPIResponse";
+    import { settings } from "~/lib/stores/settings";
+    import { get } from "svelte/store";
 
     export let result: SiteResult[0];
+
+    const orderBy = get(settings).orderBy;
 
     let panelOpen = false;
     let snackbar: Snackbar;
@@ -92,7 +96,9 @@
                 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
         }).addTo(map);
 
-        L.marker([serverResult.lat, serverResult.lon], {
+        const serverLatLng = L.latLng(serverResult.lat, serverResult.lon);
+
+        L.marker(serverLatLng, {
             icon: L.icon({
                 iconUrl:
                     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png",
@@ -104,6 +110,50 @@
                 shadowSize: [41, 41],
             }),
         }).addTo(map);
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const userLatLng = L.latLng(
+                    position.coords.latitude,
+                    position.coords.longitude,
+                );
+
+                L.marker(userLatLng, {
+                    icon: L.icon({
+                        iconUrl:
+                            "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+                        shadowUrl:
+                            "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41],
+                    }),
+                }).addTo(map);
+
+                const polyline = L.polyline([userLatLng, serverLatLng], {
+                    color: "blue",
+                }).addTo(map);
+
+                const distance = map.distance(userLatLng, serverLatLng);
+                const distanceText =
+                    distance > 1000
+                        ? `${(distance / 1000).toFixed(1)} km`
+                        : `${Math.round(distance)} m`;
+
+                polyline
+                    .bindTooltip(distanceText, {
+                        permanent: true,
+                        direction: "center",
+                        className: "distance-tooltip",
+                    })
+                    .openTooltip();
+
+                map.fitBounds(L.latLngBounds(userLatLng, serverLatLng), {
+                    padding: [50, 50],
+                });
+            });
+        }
     };
 
     let menu: Menu;
@@ -123,22 +173,39 @@
                     <span class="ip">{result.ip}</span>
                 </div>
                 <div class="metrics">
-                    <div class="metric ping">
-                        <i class="material-icons">network_ping</i>
-                        <span>
-                            <span class="value">{result.duration}</span>
-                            <span class="unit">ms</span>
-                        </span>
-                    </div>
-                    <div class="metric speed">
-                        <i class="material-icons">speed</i>
-                        <span>
-                            <span class="value"
-                                >{Math.round(result.speed * 10) / 10}</span
-                            >
-                            <span class="unit">Mbps</span>
-                        </span>
-                    </div>
+                    {#if orderBy === "duration"}
+                        <div class="metric ping">
+                            <i class="material-icons">network_ping</i>
+                            <span>
+                                <span class="value">{result.duration}</span>
+                                <span class="unit">ms</span>
+                            </span>
+                        </div>
+                    {:else if orderBy === "speed"}
+                        <div class="metric speed">
+                            <i class="material-icons">speed</i>
+                            <span>
+                                <span class="value">{Math.round(result.speed * 10) / 10}</span>
+                                <span class="unit">Mbps</span>
+                            </span>
+                        </div>
+                    {:else}
+                        <div class="metric timestamp">
+                            <i class="material-icons">schedule</i>
+                            <span>
+                                <span
+                                    class="value"
+                                    title={new Date(
+                                        result.timestamp,
+                                    ).toLocaleString()}
+                                >
+                                    {formatTimeDiff(
+                                        +new Date(result.timestamp),
+                                    )}
+                                </span>
+                            </span>
+                        </div>
+                    {/if}
                 </div>
             </div>
 
@@ -353,16 +420,16 @@
                 width: 3.25em;
             }
         }
-    }
-
-    /* Content styles */
-    .server-info .metrics {
-        justify-content: space-around;
 
         .metric.timestamp {
             color: #6c757d;
             background: rgba(108, 117, 125, 0.1);
         }
+    }
+
+    /* Content styles */
+    .server-info .metrics {
+        justify-content: space-around;
 
         .metric.isp {
             color: #03dac6;
