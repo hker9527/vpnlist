@@ -2,7 +2,7 @@
 	import Server from "@components/Server.svelte";
 	import SitePickerMultiple from "@components/SitePickerMultiple.svelte";
 	import { HOST } from "@lib/const";
-	import { CountryCode, list } from "@lib/CountryCode";
+	import { CountryCode, list } from "~/lib/types/enums/CountryCode";
 	import {
 	    ZSiteAPIResponse,
 	    type SiteResult,

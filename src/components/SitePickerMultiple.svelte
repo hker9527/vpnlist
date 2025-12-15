@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Site, list as siteList } from "@lib/Site";
+	import { Site, list as siteList } from "~/lib/types/enums/Site";
 	import { Label } from "@smui/button";
 	import FormField from "@smui/form-field";
 	import Switch from "@smui/switch";

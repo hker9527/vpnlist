@@ -18,7 +18,7 @@
     import Snackbar, { Actions, Label } from "@smui/snackbar";
     import type { Map } from "leaflet";
     import "leaflet/dist/leaflet.css";
-    import { CountryCode } from "../lib/CountryCode";
+    import { CountryCode } from "../lib/types/enums/CountryCode";
     import type { SiteResult } from "../lib/types/api/SiteAPIResponse";
     import { settings } from "~/lib/stores/settings";
     import { get } from "svelte/store";
