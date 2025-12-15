@@ -1,11 +1,15 @@
+import { orderByOptions } from "~/lib/types/enums/OrderByOptions";
 import { BaseMigration } from ".";
+import { z } from "zod";
 
-export interface Shape {
-    country: string | null;
-    take: number;
-    orderBy: "timestamp" | "duration" | "speed";
-    sites: string[];
-}
+export const ShapeSchema = z.object({
+    country: z.string().nullable(),
+    take: z.number(),
+    orderBy: z.enum(orderByOptions),
+    sites: z.array(z.string())
+});
+
+export type Shape = z.infer<typeof ShapeSchema>;
 
 export const defaultSettings: Shape = {
     country: "JP",

@@ -1,16 +1,19 @@
-import { type Variant } from "~/lib/Variant";
+import { variants } from "~/lib/types/enums/Variants";
 import { BaseMigration } from ".";
 import { type Shape as LastShape } from "./001_init";
+import { z } from "zod";
+import { orderByOptions } from "~/lib/types/enums/OrderByOptions";
 
-export interface Shape {
-    country: string | null;
-    take: number;
-    orderBy: "timestamp" | "duration" | "speed";
-    sites: string[];
+export const ShapeSchema = z.object({
+    country: z.string().nullable(),
+    take: z.number(),
+    orderBy: z.enum(orderByOptions),
+    sites: z.array(z.string()),
+    variant: z.enum(variants),
+    split: z.boolean().optional()
+});
 
-    variant: Variant;
-    split?: true;
-}
+export type Shape = z.infer<typeof ShapeSchema>;
 
 export const defaultSettings: Shape = {
     country: "JP",
