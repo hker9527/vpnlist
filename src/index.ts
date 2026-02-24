@@ -11,7 +11,7 @@ import { ServerProfileRequestSchema } from "./schemas/ServerProfileRequest";
 import { StatisticRequestSchema } from "./schemas/StatisticRequest";
 
 export interface Env {
-    DIRECT_URL: string;
+    DATABASE_URL: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -135,9 +135,9 @@ let statisticRepository!: StatisticRepository;
 
 export default {
     fetch: async (request: Request, env: Env) => {
-        serverRepository = new ServerRepository(env.DIRECT_URL);
-        resultRepository = new ResultRepository(env.DIRECT_URL);
-        statisticRepository = new StatisticRepository(env.DIRECT_URL);
+        serverRepository = new ServerRepository(env.DATABASE_URL);
+        resultRepository = new ResultRepository(env.DATABASE_URL);
+        statisticRepository = new StatisticRepository(env.DATABASE_URL);
 
         return buildRouter()
             .handle(request)
