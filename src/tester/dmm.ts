@@ -86,7 +86,7 @@ export class DMMTester extends Tester {
             await driver.get(loginUrl);
             await driver.findElement({ id: "login_id" }).sendKeys(Bun.env.DMM_USER!);
             await driver.findElement({ id: "password" }).sendKeys(Bun.env.DMM_PASS!);
-            await driver.findElement({ xpath: '//button[@type="submit"]' }).then(element => driver.executeScript("arguments[0].click();", element));
+            await driver.findElement({ xpath: "//button[text()='ログイン']" }).then(element => driver.executeScript("arguments[0].click();", element));
 
             // Wait for redirect
             await driver.wait(until.urlContains("login/success"), 20000);
