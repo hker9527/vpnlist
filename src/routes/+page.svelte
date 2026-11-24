@@ -1,158 +1,147 @@
 <script lang="ts">
 	import Server from "@components/Server.svelte";
-	import SitePickerMultiple from "@components/SitePickerMultiple.svelte";
 	import { HOST } from "@lib/const";
-	import { CountryCode, list } from "~/lib/types/enums/CountryCode";
+	import type { Shape as ServerFilters } from "@lib/LocalStorage/migrations/001_init";
+	import { openSettingsKey } from "@lib/settingsDialogContext";
+	import { CountryCode } from "@lib/types/enums/CountryCode";
+	import { orderByLabels } from "@lib/types/enums/OrderByOptions";
+	import { Site } from "@lib/types/enums/Site";
 	import {
 	    ZSiteAPIResponse,
 	    type SiteResult,
 	} from "@lib/types/api/SiteAPIResponse";
 	import Accordion from "@smui-extra/accordion";
-	import Button from "@smui/button";
-	import Select, { Option } from "@smui/select";
-	import TextField from "@smui/textfield";
-	import { onMount } from "svelte";
-    import { settings } from "~/lib/stores/settings";
+	import Button, { Icon } from "@smui/button";
+	import { getContext, onMount } from "svelte";
+	import { settings } from "@lib/stores/settings";
 
+	const openSettings = getContext<() => void>(openSettingsKey);
 	let siteResult: SiteResult | null = null;
 	let fetching = false;
+	let loadError = false;
+	let mounted = false;
+	let activeRequest: AbortController | undefined;
 
-	const fetchResult = async () => {
+	function filterQuery({ sites, take, orderBy, country }: ServerFilters) {
+		const query = new URLSearchParams({ take: take.toString(), orderBy });
+		for (const site of sites) {
+			query.append("sites", site);
+		}
+		if (country !== null) {
+			query.set("country", country);
+		}
+		return query.toString();
+	}
+
+	async function fetchResult(query: string) {
+		activeRequest?.abort();
+		const request = new AbortController();
+		activeRequest = request;
 		fetching = true;
+		loadError = false;
 		siteResult = null;
 
-		const timeout = setTimeout(() => {
-			if (fetching) {
-				siteResult = [];
-				fetching = false;
-			}
-		}, 10000); // Timeout after 10 seconds
+		const timeout = setTimeout(() => request.abort(), 10000);
+		try {
+			const res = await fetch(`${HOST}/api/server?${query}`, { signal: request.signal });
+			const json = await res.json();
+			if (activeRequest !== request) return;
 
-		const url = new URL(`${HOST}/api/server`);
-		for (const site of $settings.sites) {
-			url.searchParams.append("sites", site);
-		}
-		url.searchParams.append("take", $settings.take.toString());
-		url.searchParams.append("orderBy", $settings.orderBy);
-		if ($settings.country !== null) {
-			url.searchParams.append("country", $settings.country);
-		}
-
-		const res = await fetch(url);
-		const json = await res.json();
-		if (ZSiteAPIResponse.check(json)) {
-			if (json.success) {
+			if (res.ok && ZSiteAPIResponse.check(json) && json.success) {
 				siteResult = json.data;
 			} else {
-				prompt("Failed to fetch data from the server.\nServer response:", JSON.stringify(json));
+				loadError = true;
 			}
-		} else {
-			alert(ZSiteAPIResponse.reason(json));
+		} catch {
+			if (activeRequest === request) loadError = true;
+		} finally {
+			clearTimeout(timeout);
+			if (activeRequest === request) {
+				activeRequest = undefined;
+				fetching = false;
+			}
 		}
+	}
 
-		fetching = false;
-		clearTimeout(timeout);
-	};
+	$: query = filterQuery($settings);
+	$: hasMatchFilters = $settings.country !== null || $settings.sites.length > 0;
+	$: if (mounted) fetchResult(query);
 
-	onMount(fetchResult);
+	function clearMatchFilters() {
+		settings.update((current) => ({ ...current, country: null, sites: [] }));
+	}
 
-	const onApply = async () => {
-		await fetchResult();
-	};
+	onMount(() => {
+		mounted = true;
+		return () => {
+			const request = activeRequest;
+			activeRequest = undefined;
+			request?.abort();
+		};
+	});
 </script>
 
 <main>
-	<div class="row border border-secondary rounded mb-2">
-		<div class="col-12 col-md-8 p-4">
-			Filters:
-			<Select
-				bind:value={$settings.country}
-				class="w-100"
-				label="Country"
-			>
-				<Option value={null}>All countries</Option>
-				{#each Object.keys(list).sort((a, b) => {
-					const precedence = ["JP", "US"];
-					const aIndex = precedence.indexOf(a);
-					const bIndex = precedence.indexOf(b);
-					if (aIndex !== -1 && bIndex !== -1) {
-						return aIndex - bIndex;
-					} else if (aIndex !== -1) {
-						return -1;
-					} else if (bIndex !== -1) {
-						return 1;
-					} else {
-						return 0;
-					}
-				}) as country}
-					<Option value={country}>
-						{new CountryCode(country).toString()}
-					</Option>
-				{/each}
-			</Select>
+	<h1>Find a VPN server</h1>
+	<p>Choose a server, download its profile, then import it into OpenVPN and connect.</p>
 
-			<TextField
-				bind:value={$settings.take}
-				class="w-100"
-				label="Result count"
-				type="number"
-				input$min="1"
-				input$max="100"
-				input$step="1"
-			/>
+	<aside class="vpngate-notice" aria-label="About VPN Gate">
+		<a href="https://www.vpngate.net/en/about_overview.aspx">VPN Gate</a>
+		is a free University of Tsukuba research project with volunteer-run public servers.
+		Speed and availability vary. Your IP address and connection details are
+		<a href="https://www.vpngate.net/en/about_abuse.aspx">logged for at least three months</a>.
+		Don’t rely on it for anonymity.
+	</aside>
 
-			<Select
-				bind:value={$settings.orderBy}
-				class="w-100"
-				label="Order by"
-			>
-				{#each [
-					{ value: "timestamp", label: "Most recent" },
-					{ value: "duration", label: "Lowest ping" },
-					{ value: "speed", label: "Fastest speed" },
-				] as orderOption}
-					<Option
-						value={orderOption.value}
-					>
-						{orderOption.label}
-					</Option>
+	<div class="results-toolbar">
+		<div class="filter-summary">
+			<strong>Filters:</strong>
+			<ul class="filter-pills" role="list">
+				<li>{$settings.country ? new CountryCode($settings.country).toFullName() : "All countries"}</li>
+				{#each $settings.sites as site}
+					<li>{new Site(site).toFullName()}</li>
+				{:else}
+					<li>All sites</li>
 				{/each}
-			</Select>
+				<li>Up to {$settings.take}</li>
+				<li>{orderByLabels[$settings.orderBy]}</li>
+			</ul>
 		</div>
-		<div class="col-12 col-md-4 p-4">
-			Required sites:
-			<SitePickerMultiple 
-				bind:selected={$settings.sites}
-			/>
-			<Button
-				class="w-100 mt-2"
-				variant="outlined"
-				on:click={() => {
-					settings.reset();
-				}}
-			>Reset</Button>
-		</div>
+		<Button class="refresh-button" variant="outlined" on:click={() => fetchResult(query)} disabled={fetching}>
+			<Icon class="material-icons" aria-hidden="true">refresh</Icon>
+			Refresh
+		</Button>
 	</div>
-	<Button
-		class="w-100"
-		on:click={() => onApply()}
-		disabled={fetching}
-	>
-		Apply
-	</Button>
 
-	<div class="accordion-container">
-		{#if siteResult}
-			{#if siteResult.length > 0}
-				<Accordion multiple>
-					{#each siteResult as result}
-						<Server {result} />
-					{/each}
-				</Accordion>
-			{:else}
-				<div>No servers found!</div>
-				<div>If you believe this is wrong, ping the author on Discord!</div>
-			{/if}
+	<div class="accordion-container" aria-busy={fetching}>
+		{#if loadError || siteResult?.length === 0}
+			<div role="status">
+				{#if loadError}
+					<h2>Couldn’t load the server list</h2>
+					<p>Try Refresh, or browse the official VPN Gate list.</p>
+				{:else if hasMatchFilters}
+					<h2>No servers match your filters</h2>
+					<p>Try a different country or require fewer sites.</p>
+				{:else}
+					<h2>No servers are listed right now</h2>
+					<p>Try Refresh, or browse the official VPN Gate list.</p>
+				{/if}
+			</div>
+			<div class="results-actions">
+				{#if !loadError && hasMatchFilters}
+					<Button variant="outlined" aria-haspopup="dialog" on:click={openSettings}>Adjust filters</Button>
+					<Button on:click={clearMatchFilters}>Clear filters</Button>
+				{/if}
+				<Button href="https://www.vpngate.net/en/" target="_blank" rel="noopener noreferrer">
+					Browse VPN Gate
+				</Button>
+			</div>
+		{:else if siteResult}
+			<Accordion multiple>
+				{#each siteResult as result}
+					<Server {result} />
+				{/each}
+			</Accordion>
 		{:else}
 			<div class="loading">
 				<div class="loading__icon" />
@@ -161,3 +150,66 @@
 		{/if}
 	</div>
 </main>
+
+<style>
+	h1 {
+		margin: 0 0 0.375rem;
+		font-size: 1.5rem;
+	}
+
+	.vpngate-notice {
+		border-inline-start: 3px solid var(--mdc-theme-primary, #ab47bc);
+		padding-inline-start: 0.75rem;
+		font-size: 0.875rem;
+	}
+
+	.results-toolbar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+		margin-block: 0.75rem;
+	}
+
+	.filter-summary {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.375rem;
+		font-size: 0.875rem;
+	}
+
+	.filter-pills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.375rem;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.filter-pills li {
+		padding: 0.125rem 0.5rem;
+		border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+		border-radius: 999px;
+	}
+
+	.results-toolbar :global(.refresh-button) {
+		margin-inline-start: auto;
+	}
+
+	.accordion-container h2 {
+		margin: 0 0 0.25rem;
+		font-size: 1.125rem;
+	}
+
+	.accordion-container p {
+		margin: 0 0 0.5rem;
+	}
+
+	.results-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+</style>

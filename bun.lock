@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "vpnlist-app",
@@ -14,8 +15,10 @@
       },
       "devDependencies": {
         "@smui-extra/accordion": "^7.0.0",
+        "@smui-extra/badge": "^7.0.0",
         "@smui/button": "^7.0.0",
         "@smui/data-table": "^7.0.0",
+        "@smui/dialog": "^7.0.0",
         "@smui/drawer": "^7.0.0",
         "@smui/form-field": "^7.0.0",
         "@smui/icon-button": "^7.0.0",
@@ -24,8 +27,11 @@
         "@smui/list": "^7.0.0",
         "@smui/menu": "^7.0.0",
         "@smui/select": "^7.0.0",
+        "@smui/slider": "^7.0.0",
         "@smui/snackbar": "^7.0.0",
         "@smui/switch": "^7.0.0",
+        "@smui/tab": "^7.0.0",
+        "@smui/tab-bar": "^7.0.0",
         "@smui/textfield": "^7.0.0",
         "@smui/top-app-bar": "^7.0.0",
         "@sveltejs/adapter-auto": "^2.1.1",
@@ -119,6 +125,8 @@
 
     "@material/density": ["@material/density@14.0.0", "", { "dependencies": { "tslib": "^2.1.0" } }, "sha512-NlxXBV5XjNsKd8UXF4K/+fOXLxoFNecKbsaQO6O2u+iG8QBfFreKRmkhEBb2hPPwC3w8nrODwXX0lHV+toICQw=="],
 
+    "@material/dialog": ["@material/dialog@14.0.0", "", { "dependencies": { "@material/animation": "^14.0.0", "@material/base": "^14.0.0", "@material/button": "^14.0.0", "@material/dom": "^14.0.0", "@material/elevation": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/icon-button": "^14.0.0", "@material/ripple": "^14.0.0", "@material/rtl": "^14.0.0", "@material/shape": "^14.0.0", "@material/theme": "^14.0.0", "@material/tokens": "^14.0.0", "@material/touch-target": "^14.0.0", "@material/typography": "^14.0.0", "tslib": "^2.1.0" } }, "sha512-E07NEE4jP8jHaw/y2Il2R1a3f4wDFh2sgfCBtRO/Xh0xxJUMuQ7YXo/F3SAA8jfMbbkUv/PHdJUM3I3HmI9mAA=="],
+
     "@material/dom": ["@material/dom@14.0.0", "", { "dependencies": { "@material/feature-targeting": "^14.0.0", "tslib": "^2.1.0" } }, "sha512-8t88XyacclTj8qsIw9q0vEj4PI2KVncLoIsIMzwuMx49P2FZg6TsLjor262MI3Qs00UWAifuLMrhnOnfyrbe7Q=="],
 
     "@material/drawer": ["@material/drawer@14.0.0", "", { "dependencies": { "@material/animation": "^14.0.0", "@material/base": "^14.0.0", "@material/dom": "^14.0.0", "@material/elevation": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/list": "^14.0.0", "@material/ripple": "^14.0.0", "@material/rtl": "^14.0.0", "@material/shape": "^14.0.0", "@material/theme": "^14.0.0", "@material/typography": "^14.0.0", "tslib": "^2.1.0" } }, "sha512-VPrxMIhbkXVbfH7aMFV+Um0tjOVrU/Y65X2hWsVdmjASadE8C5UYjIE3vjL1DM1M+zIa3qZZRUWqz0j1zqbr3w=="],
@@ -159,9 +167,19 @@
 
     "@material/shape": ["@material/shape@14.0.0", "", { "dependencies": { "@material/feature-targeting": "^14.0.0", "@material/rtl": "^14.0.0", "@material/theme": "^14.0.0", "tslib": "^2.1.0" } }, "sha512-o0mJB0+feOv473KckI8gFnUo8IQAaEA6ynXzw3VIYFjPi48pJwrxa0mZcJP/OoTXrCbDzDeFJfDPXEmRioBb9A=="],
 
+    "@material/slider": ["@material/slider@14.0.0", "", { "dependencies": { "@material/animation": "^14.0.0", "@material/base": "^14.0.0", "@material/dom": "^14.0.0", "@material/elevation": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/ripple": "^14.0.0", "@material/rtl": "^14.0.0", "@material/theme": "^14.0.0", "@material/typography": "^14.0.0", "tslib": "^2.1.0" } }, "sha512-m5RqySIps1vhAQnGp2eg4Sh2Ss6bzrZm10TWBw2cNFHmbiI72rK2EeFnMsBXAarplY0cot/FaMuj91VP36gKFQ=="],
+
     "@material/snackbar": ["@material/snackbar@14.0.0", "", { "dependencies": { "@material/animation": "^14.0.0", "@material/base": "^14.0.0", "@material/button": "^14.0.0", "@material/dom": "^14.0.0", "@material/elevation": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/icon-button": "^14.0.0", "@material/ripple": "^14.0.0", "@material/rtl": "^14.0.0", "@material/shape": "^14.0.0", "@material/theme": "^14.0.0", "@material/typography": "^14.0.0", "tslib": "^2.1.0" } }, "sha512-28uQBj9bw7BalNarK9j8/aVW4Ys5aRaGHoWH+CeYvAjqQUJkrYoqM52aiKhBwqrjBPMJHk1aXthe3YbzMBm6vA=="],
 
     "@material/switch": ["@material/switch@14.0.0", "", { "dependencies": { "@material/animation": "^14.0.0", "@material/base": "^14.0.0", "@material/density": "^14.0.0", "@material/dom": "^14.0.0", "@material/elevation": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/focus-ring": "^14.0.0", "@material/ripple": "^14.0.0", "@material/rtl": "^14.0.0", "@material/shape": "^14.0.0", "@material/theme": "^14.0.0", "@material/tokens": "^14.0.0", "tslib": "^2.1.0" } }, "sha512-vHVKzbvHVKGSrkMB1lZAl8z3eJ8sPRnSR+DWn+IhqHcTsDdDyly2NNj4i2vTSrEA39CztGqkx0OnKM4vkpiZHw=="],
+
+    "@material/tab": ["@material/tab@14.0.0", "", { "dependencies": { "@material/base": "^14.0.0", "@material/elevation": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/focus-ring": "^14.0.0", "@material/ripple": "^14.0.0", "@material/rtl": "^14.0.0", "@material/tab-indicator": "^14.0.0", "@material/theme": "^14.0.0", "@material/typography": "^14.0.0", "tslib": "^2.1.0" } }, "sha512-jGSQdp6BvZOVnvGbv0DvNDJL2lHYVFtKGehV0gSZ7FrjHK6gZnKZjWOVwt1NPu9ig9zy85vPRFpvFTeje1KZpg=="],
+
+    "@material/tab-bar": ["@material/tab-bar@14.0.0", "", { "dependencies": { "@material/animation": "^14.0.0", "@material/base": "^14.0.0", "@material/density": "^14.0.0", "@material/elevation": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/tab": "^14.0.0", "@material/tab-indicator": "^14.0.0", "@material/tab-scroller": "^14.0.0", "@material/theme": "^14.0.0", "@material/typography": "^14.0.0", "tslib": "^2.1.0" } }, "sha512-G/UYEOIcljCHlkj3iCRGIz4zE9RVcsdC9wuOR6LE2rla6EGyT0x2psNlL0pIMROjXoB0HGda/gB90ovzKcbURA=="],
+
+    "@material/tab-indicator": ["@material/tab-indicator@14.0.0", "", { "dependencies": { "@material/animation": "^14.0.0", "@material/base": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/theme": "^14.0.0", "tslib": "^2.1.0" } }, "sha512-wfq136fsJGqtCIW8x1wFQHgRr7dIQ9SWqp6WG4FQGHpSzliNDA23/bdBUjh3lX2U+mfbdsFmZWEPy06jg2uc5g=="],
+
+    "@material/tab-scroller": ["@material/tab-scroller@14.0.0", "", { "dependencies": { "@material/animation": "^14.0.0", "@material/base": "^14.0.0", "@material/dom": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/tab": "^14.0.0", "tslib": "^2.1.0" } }, "sha512-wadETsRM7vT4mRjXedaPXxI/WFSSgqHRNI//dORJ6627hoiJfLb5ixwUKTYk9zTz6gNwAlRTrKh98Dr9T7n7Kw=="],
 
     "@material/textfield": ["@material/textfield@14.0.0", "", { "dependencies": { "@material/animation": "^14.0.0", "@material/base": "^14.0.0", "@material/density": "^14.0.0", "@material/dom": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/floating-label": "^14.0.0", "@material/line-ripple": "^14.0.0", "@material/notched-outline": "^14.0.0", "@material/ripple": "^14.0.0", "@material/rtl": "^14.0.0", "@material/shape": "^14.0.0", "@material/theme": "^14.0.0", "@material/tokens": "^14.0.0", "@material/typography": "^14.0.0", "tslib": "^2.1.0" } }, "sha512-HGbtAlvlIB2vWBq85yw5wQeeP3Kndl6Z0TJzQ6piVtcfdl2mPyWhuuVHQRRAOis3rCIaAAaxCQYYTJh8wIi0XQ=="],
 
@@ -207,6 +225,8 @@
 
     "@smui-extra/accordion": ["@smui-extra/accordion@7.0.0", "", { "dependencies": { "@material/animation": "^14.0.0", "@material/elevation": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/ripple": "^14.0.0", "@material/theme": "^14.0.0", "@material/typography": "^14.0.0", "@smui/common": "^7.0.0", "@smui/paper": "^7.0.0", "@smui/ripple": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-yi35uaZYkZR7x1WxUMpKngXwBzNhJqRQ8U4Fyyl8TPg1mxVXKHvhUajNKrbbWIdKqBSZZrSScGj6Qvl/4HniGQ=="],
 
+    "@smui-extra/badge": ["@smui-extra/badge@7.0.0", "", { "dependencies": { "@material/feature-targeting": "^14.0.0", "@material/rtl": "^14.0.0", "@material/shape": "^14.0.0", "@material/theme": "^14.0.0", "@material/typography": "^14.0.0", "@smui/common": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-DJ1YW/1JuId6pXCD2xFkQnPkSByQGz48MpclWme42YhZhx1fIGHnNBQ1hop2rOwCZ9SVXgPPzMxwe7X9WY4b3g=="],
+
     "@smui/button": ["@smui/button@7.0.0", "", { "dependencies": { "@material/button": "^14.0.0", "@material/elevation": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/ripple": "^14.0.0", "@material/shape": "^14.0.0", "@material/theme": "^14.0.0", "@smui/common": "^7.0.0", "@smui/ripple": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-T1WK03HlOecrufoO4Z/W1dXC/R+VLqrwmBcIVQwqN0TiwUdHDfeCa1TjrqroLn9eJUe73T/O3Abh9b2Nttz77g=="],
 
     "@smui/checkbox": ["@smui/checkbox@7.0.0", "", { "dependencies": { "@material/checkbox": "^14.0.0", "@smui/common": "^7.0.0", "@smui/ripple": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-cHaO9aWi2Pk9GTBcVmvnF4Cwie+ySqODjCMU3OMmhtUZX3LamneyNMRtNqiKXmpr8sXVE6EK+WUisZrJp5e97g=="],
@@ -214,6 +234,8 @@
     "@smui/common": ["@smui/common@7.0.0", "", { "dependencies": { "@material/dom": "^14.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-/JUf25KMIDLFNfiuMSMs2g7dEZZFUnDJDxpbT3FlGEY/HKoEf0W9GnbmIOzPje1wxW9ajKHN2SIYDPx9so1vnw=="],
 
     "@smui/data-table": ["@smui/data-table@7.0.0", "", { "dependencies": { "@material/data-table": "^14.0.0", "@material/dom": "^14.0.0", "@smui/checkbox": "^7.0.0", "@smui/common": "^7.0.0", "@smui/icon-button": "^7.0.0", "@smui/ripple": "^7.0.0", "@smui/select": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-ZpAdnovoi5g0ya6oitMfPWttsiF9u2N9WyZtY5BYfxNU3famCmM8Wbtno8pF0sZ5tNueEw1Xn8A1BI+KNKBPyA=="],
+
+    "@smui/dialog": ["@smui/dialog@7.0.0", "", { "dependencies": { "@material/button": "^14.0.0", "@material/dialog": "^14.0.0", "@material/dom": "^14.0.0", "@smui/common": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-F6lxwiGoc9ga0btsnpMWIYXPUXAKS0Ewa3CQH9HUPumqCzImTIlsGWL8fiAP3feVjRK+InRSaryZz0eJFZLo/A=="],
 
     "@smui/drawer": ["@smui/drawer@7.0.0", "", { "dependencies": { "@material/dom": "^14.0.0", "@material/drawer": "^14.0.0", "@smui/common": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-FZcbgOtpgJIWyqD0N00R3y9rxwcmIVXwYipZ7KnNhHp4W/Ywv3wUuyeflVziN2c2KbnmkruChibyVvdlro9ugQ=="],
 
@@ -243,9 +265,19 @@
 
     "@smui/select": ["@smui/select@7.0.0", "", { "dependencies": { "@material/feature-targeting": "^14.0.0", "@material/ripple": "^14.0.0", "@material/rtl": "^14.0.0", "@material/select": "^14.0.0", "@material/theme": "^14.0.0", "@smui/common": "^7.0.0", "@smui/floating-label": "^7.0.0", "@smui/line-ripple": "^7.0.0", "@smui/list": "^7.0.0", "@smui/menu": "^7.0.0", "@smui/menu-surface": "^7.0.0", "@smui/notched-outline": "^7.0.0", "@smui/ripple": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-ARHVovPy7Tu4b4C9O8Pr9pqI+gGXLH4fxG7NkXXpy8OZ92FDBlAB1ztRQa6XxykIRTCHhmuWOogEw6UimNvJ+w=="],
 
+    "@smui/slider": ["@smui/slider@7.0.0", "", { "dependencies": { "@material/dom": "^14.0.0", "@material/slider": "^14.0.0", "@smui/common": "^7.0.0", "@smui/ripple": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-ItVupldtzAtPvHGrflB/8LIn1UoFD+Ow2XZuMJXPjqTxS2vsJI3RVKDqsN5oY5xFabiLzTEaUJeukv1/ZQlDrQ=="],
+
     "@smui/snackbar": ["@smui/snackbar@7.0.0", "", { "dependencies": { "@material/dom": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/snackbar": "^14.0.0", "@smui/button": "^7.0.0", "@smui/common": "^7.0.0", "@smui/icon-button": "^7.0.0", "@smui/ripple": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-01XcqJJhpOx1szlWfV5Eex+cZOPP4HkFz7MefsC33NOS68eWoNEre6rEsKw6XEeYnbKHv6wNbyowX4c8eRKncg=="],
 
     "@smui/switch": ["@smui/switch@7.0.0", "", { "dependencies": { "@material/feature-targeting": "^14.0.0", "@material/switch": "^14.0.0", "@material/theme": "^14.0.0", "@smui/common": "^7.0.0", "@smui/ripple": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-LeY1aIMvbJOOmex5o/M7jOX0y6K/1Xa2u6myju30mOy595ibxMGRfuNSdePHBBrR79QbsEow/otltSA1vspw2Q=="],
+
+    "@smui/tab": ["@smui/tab@7.0.0", "", { "dependencies": { "@material/tab": "^14.0.0", "@smui/common": "^7.0.0", "@smui/ripple": "^7.0.0", "@smui/tab-indicator": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-FlOwRO4vBlAH5wm4EFrOPiKtsGkoMbyWqtMyGwBLrGQUTPVUUrFFnHD0J2QHztKKiaIJme+GqrD1bQA9whfKkA=="],
+
+    "@smui/tab-bar": ["@smui/tab-bar@7.0.0", "", { "dependencies": { "@material/tab-bar": "^14.0.0", "@smui/common": "^7.0.0", "@smui/tab": "^7.0.0", "@smui/tab-scroller": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-ycAuoGAS2YaV541vDib69CAswNQ+yMRFnloagRcUhyJ4t1eypLDXnba29r1oiEkhwdunDMcH7UCbeyrZUIBJFg=="],
+
+    "@smui/tab-indicator": ["@smui/tab-indicator@7.0.0", "", { "dependencies": { "@material/tab-indicator": "^14.0.0", "@smui/common": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-wyLpiljJwF1X9ZvCsVFIzqVkbxFF1wyxvAnBem74y6gKlyKa1F5oUm+bwNI/zB7lyWkTjsvWKlWsrzqDdOuFPg=="],
+
+    "@smui/tab-scroller": ["@smui/tab-scroller@7.0.0", "", { "dependencies": { "@material/dom": "^14.0.0", "@material/tab-scroller": "^14.0.0", "@smui/common": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-4smThaPvy3sVj4/Ezgo8er7BqWmnnemmpuWPcNpmt3+hckUhKwVoqtoa9HUdRZClDbyegABvhwbTjIkR39IM+Q=="],
 
     "@smui/textfield": ["@smui/textfield@7.0.0", "", { "dependencies": { "@material/dom": "^14.0.0", "@material/feature-targeting": "^14.0.0", "@material/ripple": "^14.0.0", "@material/rtl": "^14.0.0", "@material/textfield": "^14.0.0", "@smui/common": "^7.0.0", "@smui/floating-label": "^7.0.0", "@smui/line-ripple": "^7.0.0", "@smui/notched-outline": "^7.0.0", "@smui/ripple": "^7.0.0", "svelte2tsx": "^0.7.8" } }, "sha512-3p/pipFrj6xuA6YUhIEHf4fxInMENI3EFHVYeF1wU0vERSojtqBw+NnAscgv/PHKv4X6nFY3ZvD/9cVf7S4frA=="],
 

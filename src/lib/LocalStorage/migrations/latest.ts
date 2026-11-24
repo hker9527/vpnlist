@@ -1,4 +1,4 @@
-import * as Latest from "./002_save_download_option";
+import * as Latest from "./003_download_preferences";
 
 export const ShapeSchema = Latest.ShapeSchema;
 export type Shape = Latest.Shape;

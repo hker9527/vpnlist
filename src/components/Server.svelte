@@ -5,22 +5,14 @@
         type ServerResult,
     } from "@lib/types/api/ServerAPIResponse";
     import { Content, Header, Panel } from "@smui-extra/accordion";
-    import Button from "@smui/button";
+    import Button, { Icon as ButtonIcon } from "@smui/button";
     import IconButton, { Icon } from "@smui/icon-button";
-    import List, {
-        Item,
-        PrimaryText,
-        SecondaryText,
-        Separator,
-        Text,
-    } from "@smui/list";
-    import Menu, { SelectionGroup, SelectionGroupIcon } from "@smui/menu";
     import Snackbar, { Actions, Label } from "@smui/snackbar";
     import type { Map } from "leaflet";
     import "leaflet/dist/leaflet.css";
     import { CountryCode } from "../lib/types/enums/CountryCode";
     import type { SiteResult } from "../lib/types/api/SiteAPIResponse";
-    import { settings } from "~/lib/stores/settings";
+    import { selectedPlatform, settings } from "@lib/stores/settings";
     import { get } from "svelte/store";
 
     export let result: SiteResult[0];
@@ -67,16 +59,15 @@
         }
     };
 
-    let variant = "current";
-    let split = false;
-    const getDownloadLink = () => {
+    let downloadLink: string;
+    $: {
         const url = new URL(`${HOST}/api/server/${result.ip}/config`);
-        url.searchParams.set("variant", variant);
-        if (split) {
+        url.searchParams.set("variant", $settings.variant);
+        if ($settings.split) {
             url.searchParams.set("split", "true");
         }
-        return url.toString();
-    };
+        downloadLink = url.toString();
+    }
 
     const initMap = async () => {
         if (map) return;
@@ -155,8 +146,6 @@
             });
         }
     };
-
-    let menu: Menu;
 </script>
 
 <main>
@@ -249,98 +238,24 @@
                         <div id="map-{result.ip}" class="map my-2" />
                     </div>
                 </div>
-                <div>
+                <div class="download-actions">
                     <Button
-                        on:click={() => {
-                            menu.setOpen(true);
-                        }}
-                        variant="raised">Download</Button
+                        href={downloadLink}
+                        on:click={() => snackbar.open()}
+                        variant="raised"
                     >
-                    <Menu bind:this={menu}>
-                        <List>
-                            <SelectionGroup>
-                                {#each [{ type: "beta", requirement: ">2.7.0" }, { type: "current", requirement: "2.6.0 - 2.6.9" }, { type: "legacy", requirement: "<2.6.0" }] as thing (thing.type)}
-                                    <Item
-                                        on:SMUI:action={() => {
-                                            variant = thing.type;
-                                        }}
-                                        selected={thing.type === variant}
-                                    >
-                                        <SelectionGroupIcon>
-                                            <i class="material-icons">check</i>
-                                        </SelectionGroupIcon>
-                                        <Text>
-                                            <PrimaryText>
-                                                {thing.type
-                                                    .charAt(0)
-                                                    .toUpperCase() +
-                                                    thing.type.slice(1)}
-                                            </PrimaryText>
-                                            <SecondaryText>
-                                                Version {thing.requirement}
-                                            </SecondaryText>
-                                        </Text>
-                                    </Item>
-                                {/each}
-                            </SelectionGroup>
-                            <Separator />
-                            <SelectionGroup>
-                                {#each [false, true] as _split}
-                                    <Item
-                                        on:SMUI:action={() => {
-                                            split = _split;
-                                        }}
-                                        selected={_split === split}
-                                    >
-                                        <SelectionGroupIcon>
-                                            <i class="material-icons">check</i>
-                                        </SelectionGroupIcon>
-                                        <Text>
-                                            <PrimaryText>
-                                                {_split
-                                                    ? "Split tunneling"
-                                                    : "Original"}
-                                            </PrimaryText>
-                                            <SecondaryText>
-                                                {_split
-                                                    ? "Only works on Windows"
-                                                    : "Cross-platform"}
-                                            </SecondaryText>
-                                        </Text>
-                                    </Item>
-                                {/each}
-                            </SelectionGroup>
-                            <Separator />
-                            <Item
-                                on:SMUI:action={() => {
-                                    snackbar.open();
-                                    const link = getDownloadLink();
-                                    const a = document.createElement("a");
-                                    a.href = link;
-                                    a.click();
-                                }}
-                            >
-                                <SelectionGroupIcon>
-                                    <i class="material-icons">file_download</i>
-                                </SelectionGroupIcon>
-                                <Text>Download</Text>
-                            </Item>
-                            <Item
-                                on:SMUI:action={() => {
-                                    snackbar.open();
-                                    const link = getDownloadLink();
-                                    const a = document.createElement("a");
-                                    a.href = `openvpn://import-profile/${link}`;
-                                    a.click();
-                                }}
-                            >
-                                <SelectionGroupIcon>
-                                    <i class="material-icons">android</i>
-                                </SelectionGroupIcon>
-                                <Text>Open in app</Text>
-                            </Item>
-                        </List>
-                    </Menu>
+                        Download
+                    </Button>
+                    {#if $selectedPlatform === "android"}
+                        <Button
+                            class="open-in-app"
+                            href={`openvpn://import-profile/${downloadLink}`}
+                            variant="raised"
+                        >
+                            <ButtonIcon class="material-icons" aria-hidden="true">android</ButtonIcon>
+                            Open in app
+                        </Button>
+                    {/if}
                 </div>
             {:else}
                 <div class="d-flex align-items-center my-2">
@@ -355,7 +270,7 @@
     </Panel>
     <Snackbar bind:this={snackbar}>
         <Label>
-            Downloading... If nothing happens, click <a href={getDownloadLink()}
+            Downloading... If nothing happens, click <a href={downloadLink}
                 >here</a
             > to manually download.
         </Label>
@@ -428,6 +343,17 @@
     }
 
     /* Content styles */
+    .download-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+
+        :global(.mdc-button--raised.open-in-app) {
+            background-color: #3ddc84;
+            color: #092719;
+        }
+    }
+
     .server-info .metrics {
         justify-content: space-around;
 
