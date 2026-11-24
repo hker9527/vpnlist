@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { version } from "$app/environment";
 	import SettingsDialog from "@components/SettingsDialog.svelte";
 	import { openSettingsKey } from "@lib/settingsDialogContext";
 	import { settings } from "@lib/stores/settings";
@@ -17,6 +18,9 @@
 	import { onMount, setContext } from "svelte";
 	
 	polyfillCountryFlagEmojis();
+
+	// Keep the prerendered pages and CDN-cached theme files on the same build.
+	const themeVersion = encodeURIComponent(version);
 
 	let settingsDialog: SettingsDialog;
 	let settingsReady = false;
@@ -43,6 +47,11 @@
 		settingsReady = true;
 	});
 </script>
+
+<svelte:head>
+	<link rel="stylesheet" href="/smui.css?v={themeVersion}" media="(prefers-color-scheme: light)" />
+	<link rel="stylesheet" href="/smui-dark.css?v={themeVersion}" media="(prefers-color-scheme: dark)" />
+</svelte:head>
 
 <main>
 	<TopAppBar>
