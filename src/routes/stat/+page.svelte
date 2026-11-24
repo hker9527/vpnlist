@@ -1,7 +1,7 @@
 <script lang="ts">
     import SitePicker from "@components/SitePicker.svelte";
     import { HOST } from "@lib/const";
-    import { CountryCode } from "~/lib/types/enums/CountryCodes/CountryCode";
+    import { CountryCode } from "@lib/types/enums/CountryCode";
     import {
         ZStatAPIResponse,
         type StatResult,
