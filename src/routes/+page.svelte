@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ConnectionTest from "@components/ConnectionTest.svelte";
 	import Server from "@components/Server.svelte";
 	import { HOST } from "@lib/const";
 	import type { Shape as ServerFilters } from "@lib/LocalStorage/migrations/001_init";
@@ -16,6 +17,7 @@
 	import { settings } from "@lib/stores/settings";
 
 	const openSettings = getContext<() => void>(openSettingsKey);
+	let diagnosticsOpen = false;
 	let siteResult: SiteResult | null = null;
 	let fetching = false;
 	let loadError = false;
@@ -149,6 +151,13 @@
 			</div>
 		{/if}
 	</div>
+
+	<details class="diagnostics" on:toggle={(event) => (diagnosticsOpen = event.currentTarget.open)}>
+		<summary>Already connected? Test your connection</summary>
+		{#if diagnosticsOpen}
+			<ConnectionTest />
+		{/if}
+	</details>
 </main>
 
 <style>
@@ -211,5 +220,17 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
+	}
+
+	.diagnostics {
+		margin-block: 1rem;
+		border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+		border-radius: 8px;
+	}
+
+	summary {
+		padding: 0.75rem 1rem;
+		font-weight: 600;
+		cursor: pointer;
 	}
 </style>
