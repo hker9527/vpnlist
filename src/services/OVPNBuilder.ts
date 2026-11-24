@@ -65,6 +65,15 @@ dns search-domains assets-umamusume-en.akamaized.net
 dns search-domains apidgp-gameplayer.games.dmm.com
 `.replaceAll("\n", "\r\n");
 
+// Route global IPv6 into the TUN so block-ipv6 can reject it without changing IPv4 routes.
+const BLOCK_IPV6_PATCH = `
+
+# Block public IPv6 while connected
+ifconfig-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1
+route-ipv6 2000::/3
+block-ipv6
+`.replaceAll("\n", "\r\n");
+
 export class OVPNBuilder {
     #time!: string;
     #proto!: string;
@@ -121,7 +130,7 @@ export class OVPNBuilder {
         return this;
     }
 
-    public build(variant: Variant, split?: boolean) {
+    public build(variant: Variant, split?: boolean, blockIpv6 = true) {
         let config = OVPN_TEMPLATE
             .replace("%TIME%", this.#time)
             .replace("%PROTO%", this.#proto)
@@ -141,6 +150,10 @@ export class OVPNBuilder {
                 config += DNS_PATCH;
             }
             config += ROUTE_PATCH;
+        }
+
+        if (blockIpv6) {
+            config += BLOCK_IPV6_PATCH;
         }
 
         return {

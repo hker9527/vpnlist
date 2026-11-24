@@ -39,4 +39,34 @@ test.each(["legacy", "current", "beta"])("split %s profiles include game and dia
     expect(lines).not.toContain("route umavpn.top");
     expect(lines.includes("dns search-domains api.games.umamusume.com")).toBe(variant === "beta");
     expect(lines.includes("dns search-domains assets-umamusume-en.akamaized.net")).toBe(variant === "beta");
+    expect(lines).toContain("block-ipv6");
+});
+
+test.each(["", "&split=true"])("IPv6 blocking works by default and with blockIpv6=true (%s)", async (split) => {
+    for (const option of ["", "&blockIpv6=true"]) {
+        const response = await download(`variant=current${split}${option}`);
+        expect(response.status).toBe(200);
+
+        const lines = (await response.text()).split(/\r?\n/);
+        expect(lines).toContain("block-ipv6");
+        expect(lines).toContain("ifconfig-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1");
+        expect(lines).toContain("route-ipv6 2000::/3");
+        expect(lines.includes("route-nopull")).toBe(Boolean(split));
+        expect(lines.includes("route api.games.umamusume.com")).toBe(Boolean(split));
+        expect(lines.includes("route tv.dmm.com")).toBe(Boolean(split));
+        expect(lines.includes("route www.gco.gov.qa")).toBe(Boolean(split));
+    }
+});
+
+test.each(["", "&split=true"])("explicit IPv6 opt-out preserves the profile's IPv4 routes (%s)", async (split) => {
+    const response = await download(`variant=legacy&blockIpv6=false${split}`);
+    expect(response.status).toBe(200);
+
+    const content = await response.text();
+    expect(content).not.toMatch(/^(route-ipv6|block-ipv6|ifconfig-ipv6)/m);
+    expect(content.includes("route api.games.umamusume.com")).toBe(Boolean(split));
+});
+
+test("invalid IPv6 option returns 400", async () => {
+    expect((await download("variant=current&blockIpv6=maybe")).status).toBe(400);
 });

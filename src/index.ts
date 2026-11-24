@@ -77,7 +77,8 @@ const buildRouter = () => {
                 argv = ServerProfileRequestSchema.parse({
                     ip: params.ip,
                     variant: query.variant,
-                    split: query.split
+                    split: query.split,
+                    blockIpv6: query.blockIpv6
                 });
             } catch {
                 return badJson(400);
@@ -97,7 +98,7 @@ const buildRouter = () => {
                 .setCa(data.ca)
                 .setCert(data.cert)
                 .setKey(data.key)
-                .build(argv.variant, argv.split);
+                .build(argv.variant, argv.split, argv.blockIpv6);
 
             return createResponse("application/x-openvpn-profile")(content, {
                 headers: {
