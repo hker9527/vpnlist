@@ -13,6 +13,7 @@
     import { CountryCode } from "../lib/types/enums/CountryCode";
     import type { SiteResult } from "../lib/types/api/SiteAPIResponse";
     import { selectedPlatform, settings } from "@lib/stores/settings";
+    import { onDestroy } from "svelte";
     import { get } from "svelte/store";
 
     export let result: SiteResult[0];
@@ -21,9 +22,20 @@
 
     let panelOpen = false;
     let snackbar: Snackbar;
-    let map: Map;
+    let map: Map | undefined;
+    let mapElement: HTMLDivElement | undefined;
+    let distanceControlElement: HTMLDivElement | undefined;
+    let showMyDistance: (() => void) | undefined;
+    let locating = false;
+    let distanceText = "";
+    let locationError = "";
 
     let serverResult: ServerResult;
+
+    onDestroy(() => {
+        map?.remove();
+        map = undefined;
+    });
 
     const fetchServer = async () => {
         if (serverResult) return;
@@ -72,20 +84,27 @@
     const initMap = async () => {
         if (map) return;
 
-        const l = await import("leaflet");
-        const L = l.default;
+        const { default: L } = await import("leaflet");
+        const controlElement = distanceControlElement;
+        if (!mapElement || !controlElement || map) return;
 
-        map = L.map("map-" + result.ip, {
+        const serverMap = L.map(mapElement, {
             center: [serverResult.lat, serverResult.lon],
             zoom: 6,
             scrollWheelZoom: false,
         });
+        map = serverMap;
+
+        const distanceControl = new L.Control({ position: "topright" });
+        L.DomEvent.disableClickPropagation(controlElement);
+        distanceControl.onAdd = () => controlElement;
+        distanceControl.addTo(serverMap);
 
         L.tileLayer("https://{s}.tile.osm.org/{z}/{x}/{y}.png", {
             maxZoom: 18,
             attribution:
                 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
-        }).addTo(map);
+        }).addTo(serverMap);
 
         const serverLatLng = L.latLng(serverResult.lat, serverResult.lon);
 
@@ -100,10 +119,22 @@
                 popupAnchor: [1, -34],
                 shadowSize: [41, 41],
             }),
-        }).addTo(map);
+        }).addTo(serverMap);
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
+        showMyDistance = () => {
+            if (locating || distanceText) return;
+
+            const geolocation = navigator.geolocation;
+            if (!geolocation) {
+                locationError = "Location access is unavailable in this browser.";
+                return;
+            }
+
+            locating = true;
+            locationError = "";
+            geolocation.getCurrentPosition((position) => {
+                if (map !== serverMap) return;
+                locating = false;
                 const userLatLng = L.latLng(
                     position.coords.latitude,
                     position.coords.longitude,
@@ -120,14 +151,14 @@
                         popupAnchor: [1, -34],
                         shadowSize: [41, 41],
                     }),
-                }).addTo(map);
+                }).addTo(serverMap);
 
                 const polyline = L.polyline([userLatLng, serverLatLng], {
                     color: "blue",
-                }).addTo(map);
+                }).addTo(serverMap);
 
-                const distance = map.distance(userLatLng, serverLatLng);
-                const distanceText =
+                const distance = serverMap.distance(userLatLng, serverLatLng);
+                distanceText =
                     distance > 1000
                         ? `${(distance / 1000).toFixed(1)} km`
                         : `${Math.round(distance)} m`;
@@ -140,11 +171,17 @@
                     })
                     .openTooltip();
 
-                map.fitBounds(L.latLngBounds(userLatLng, serverLatLng), {
+                serverMap.fitBounds(L.latLngBounds(userLatLng, serverLatLng), {
                     padding: [50, 50],
                 });
-            });
-        }
+            }, (error) => {
+                if (map !== serverMap) return;
+                locating = false;
+                locationError = error.code === error.PERMISSION_DENIED
+                    ? "Location permission was denied."
+                    : "Couldn’t get your location. Try again.";
+            }, { timeout: 10000 });
+        };
     };
 </script>
 
@@ -235,7 +272,51 @@
                         </div>
                     </div>
                     <div>
-                        <div id="map-{result.ip}" class="map my-2" />
+                        <div bind:this={mapElement} id="map-{result.ip}" class="map my-2" />
+                        <div
+                            bind:this={distanceControlElement}
+                            class="leaflet-bar"
+                            hidden={!showMyDistance || Boolean(distanceText)}
+                        >
+                            <a
+                                href="#map-{result.ip}"
+                                role="button"
+                                title="Show my distance"
+                                aria-label="Show my distance"
+                                aria-disabled={locating}
+                                class:leaflet-disabled={locating}
+                                on:click|preventDefault={() => showMyDistance?.()}
+                                on:keydown={(event) => {
+                                    if (event.key === " ") {
+                                        event.preventDefault();
+                                        if (!event.repeat) showMyDistance?.();
+                                    }
+                                }}
+                            >
+                                <svg
+                                    class="ruler-icon"
+                                    aria-hidden="true"
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                >
+                                    <g transform="rotate(-40 12 12)">
+                                        <rect x="2" y="8" width="20" height="8" rx="1" />
+                                        <path d="M6 8v3m4-3v5m4-5v3m4-3v5" />
+                                    </g>
+                                </svg>
+                            </a>
+                        </div>
+                        <div class:distance-status={locating || distanceText || locationError} role="status">
+                            {#if locating}
+                                Requesting location…
+                            {:else}
+                                {distanceText ? `Straight-line distance: ${distanceText}` : locationError}
+                            {/if}
+                        </div>
                     </div>
                 </div>
                 <div class="download-actions">
@@ -343,6 +424,14 @@
     }
 
     /* Content styles */
+    .ruler-icon {
+        vertical-align: middle;
+    }
+
+    .distance-status {
+        margin-bottom: 0.5rem;
+    }
+
     .download-actions {
         display: flex;
         flex-wrap: wrap;
