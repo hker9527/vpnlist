@@ -19,52 +19,77 @@ function download(query) {
     });
 }
 
-test.each(["legacy", "current", "beta"])("split %s profiles include game and diagnostic routes", async (variant) => {
-    const response = await download(`variant=${variant}&split=true`);
-    expect(response.status).toBe(200);
+const siteDomains = {
+    uma: [
+        "api-umamusume.cygames.jp",
+        "api.games.umamusume.jp",
+        "prd-storage-app-umamusume.akamaized.net",
+        "prd-storage-game-umamusume.akamaized.net",
+        "prd-info-umamusume.akamaized.net"
+    ],
+    umag: ["api.games.umamusume.com", "assets-umamusume-en.akamaized.net"],
+    dmm: ["apidgp-gameplayer.games.dmm.com", "tv.dmm.com"]
+};
 
-    const lines = (await response.text()).split(/\r?\n/);
+function routes(lines) {
+    return lines.filter(line => line.startsWith("route "));
+}
+
+function dns(lines) {
+    return lines.filter(line => line.startsWith("dns search-domains "));
+}
+
+function splitRoutes(domains) {
+    return [...domains, "www.gco.gov.qa"].map(domain => `route ${domain}`);
+}
+
+async function profileLines(query) {
+    const response = await download(query);
+    expect(response.status).toBe(200);
+    return (await response.text()).split(/\r?\n/);
+}
+
+test("split profiles without sites keep all route groups", async () => {
+    const lines = await profileLines("variant=current&split=true");
     expect(lines).toContain("route-nopull");
-    expect(lines).toContain("route api.games.umamusume.com");
-    expect(lines).toContain("route assets-umamusume-en.akamaized.net");
-    expect(lines).not.toContain("route umamusume.com");
-    expect(lines).not.toContain("dns search-domains umamusume.com");
-    expect(lines).toContain("route api.games.umamusume.jp");
-    expect(lines).toContain("route apidgp-gameplayer.games.dmm.com");
-    expect(lines).toContain("route tv.dmm.com");
-    expect(lines).toContain("route www.gco.gov.qa");
-    expect(lines).not.toContain("route ipv4.seeip.org");
-    expect(lines).not.toContain("route tls13.cloudflare.com");
-    expect(lines).not.toContain("route cloudflare-quic.com");
-    expect(lines).not.toContain("route umavpn.top");
-    expect(lines.includes("dns search-domains api.games.umamusume.com")).toBe(variant === "beta");
-    expect(lines.includes("dns search-domains assets-umamusume-en.akamaized.net")).toBe(variant === "beta");
+    expect(routes(lines)).toEqual(splitRoutes(Object.values(siteDomains).flat()));
+    expect(dns(lines)).toEqual([]);
     expect(lines).toContain("block-ipv6");
 });
 
-test.each(["", "&split=true"])("IPv6 blocking works by default and with blockIpv6=true (%s)", async (split) => {
-    for (const option of ["", "&blockIpv6=true"]) {
-        const response = await download(`variant=current${split}${option}`);
-        expect(response.status).toBe(200);
-
-        const lines = (await response.text()).split(/\r?\n/);
-        expect(lines).toContain("block-ipv6");
-        expect(lines).toContain("ifconfig-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1");
-        expect(lines).toContain("route-ipv6 2000::/3");
-        expect(lines.includes("route-nopull")).toBe(Boolean(split));
-        expect(lines.includes("route api.games.umamusume.com")).toBe(Boolean(split));
-        expect(lines.includes("route tv.dmm.com")).toBe(Boolean(split));
-        expect(lines.includes("route www.gco.gov.qa")).toBe(Boolean(split));
-    }
+test.each(Object.entries(siteDomains))("split profile for %s includes only that site's routes", async (site, domains) => {
+    const lines = await profileLines(`variant=current&split=true&sites=${site}`);
+    expect(routes(lines)).toEqual(splitRoutes(domains));
 });
 
-test.each(["", "&split=true"])("explicit IPv6 opt-out preserves the profile's IPv4 routes (%s)", async (split) => {
-    const response = await download(`variant=legacy&blockIpv6=false${split}`);
-    expect(response.status).toBe(200);
+test("beta split profiles use repeated site codes for routes and DNS without duplicates", async () => {
+    const lines = await profileLines("variant=beta&split=true&sites=umag&sites=dmm&sites=umag");
+    expect(routes(lines)).toEqual(splitRoutes([...siteDomains.umag, ...siteDomains.dmm]));
+    expect(dns(lines)).toEqual([
+        "dns search-domains api.games.umamusume.com",
+        "dns search-domains assets-umamusume-en.akamaized.net",
+        "dns search-domains apidgp-gameplayer.games.dmm.com"
+    ]);
+});
 
-    const content = await response.text();
-    expect(content).not.toMatch(/^(route-ipv6|block-ipv6|ifconfig-ipv6)/m);
-    expect(content.includes("route api.games.umamusume.com")).toBe(Boolean(split));
+test("original profiles ignore sites and still block IPv6 by default", async () => {
+    const lines = await profileLines("variant=beta&sites=dmm");
+    expect(lines).not.toContain("route-nopull");
+    expect(routes(lines)).toEqual([]);
+    expect(dns(lines)).toEqual([]);
+    expect(lines).toContain("ifconfig-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1");
+    expect(lines).toContain("route-ipv6 2000::/3");
+    expect(lines).toContain("block-ipv6");
+});
+
+test("IPv6 opt-out preserves the selected IPv4 route group", async () => {
+    const lines = await profileLines("variant=legacy&split=true&blockIpv6=false&sites=umag");
+    expect(lines.join("\n")).not.toMatch(/^(route-ipv6|block-ipv6|ifconfig-ipv6)/m);
+    expect(routes(lines)).toEqual(splitRoutes(siteDomains.umag));
+});
+
+test("unknown site codes return 400", async () => {
+    expect((await download("variant=current&split=true&sites=uma&sites=unknown")).status).toBe(400);
 });
 
 test("invalid IPv6 option returns 400", async () => {

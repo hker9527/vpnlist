@@ -78,7 +78,8 @@ const buildRouter = () => {
                     ip: params.ip,
                     variant: query.variant,
                     split: query.split,
-                    blockIpv6: query.blockIpv6
+                    blockIpv6: query.blockIpv6,
+                    sites: query.sites
                 });
             } catch {
                 return badJson(400);
@@ -98,7 +99,7 @@ const buildRouter = () => {
                 .setCa(data.ca)
                 .setCert(data.cert)
                 .setKey(data.key)
-                .build(argv.variant, argv.split, argv.blockIpv6);
+                .build(argv);
 
             return createResponse("application/x-openvpn-profile")(content, {
                 headers: {
