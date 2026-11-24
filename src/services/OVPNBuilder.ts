@@ -40,7 +40,14 @@ route prd-storage-app-umamusume.akamaized.net
 route prd-storage-game-umamusume.akamaized.net
 route prd-info-umamusume.akamaized.net
 
+route api.games.umamusume.com
+route assets-umamusume-en.akamaized.net
+
 route apidgp-gameplayer.games.dmm.com
+route tv.dmm.com
+
+# Split-tunnel diagnostic
+route www.gco.gov.qa
 `.replaceAll("\n", "\r\n");
 
 const DNS_PATCH = `
@@ -51,6 +58,9 @@ dns search-domains api.games.umamusume.jp
 dns search-domains prd-storage-app-umamusume.akamaized.net
 dns search-domains prd-storage-game-umamusume.akamaized.net
 dns search-domains prd-info-umamusume.akamaized.net
+
+dns search-domains api.games.umamusume.com
+dns search-domains assets-umamusume-en.akamaized.net
 
 dns search-domains apidgp-gameplayer.games.dmm.com
 `.replaceAll("\n", "\r\n");
