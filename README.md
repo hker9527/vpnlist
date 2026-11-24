@@ -1,5 +1,7 @@
 # VPN list worker
 
+`GET /api/server?take=20` returns up to 20 servers. Older requests with a higher `take` are capped at 20 results.
+
 Download OpenVPN profiles from `GET /api/server/:ip/config?variant=current`.
 The supported variants are `legacy`, `current`, and `beta`.
 
