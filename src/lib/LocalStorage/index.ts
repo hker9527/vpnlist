@@ -3,6 +3,7 @@ import { Migration as Migration001 } from "./migrations/001_init";
 import { Migration as Migration002 } from "./migrations/002_save_download_option";
 import { Migration as Migration003 } from "./migrations/003_download_preferences";
 import { type Shape, defaultSettings } from "./migrations/latest";
+import { normalizeResultCount } from "../resultCount";
 
 const downloadPreferencesMigration = new Migration003();
 const downloadSettingsHintKey = `download-settings-hint-v${downloadPreferencesMigration.version}`;
@@ -41,7 +42,7 @@ export class Settings {
 			localStorage.setItem(downloadSettingsHintKey, "pending");
 		}
 
-		this.#settings = settings;
+		this.#settings = { ...settings, take: normalizeResultCount(settings.take, defaultSettings.take) };
 		this.#save();
 	}
 

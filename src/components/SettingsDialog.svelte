@@ -18,6 +18,7 @@
         type DownloadVariant,
         type PlatformPreference,
     } from "@lib/downloadPreferences";
+    import { maxResultCount, minResultCount, normalizeResultCount } from "@lib/resultCount";
     import { detectedPlatform, settings } from "@lib/stores/settings";
     import { CountryCode, list as countryNames } from "@lib/types/enums/CountryCode";
     import { orderByLabels, orderByOptions } from "@lib/types/enums/OrderByOptions";
@@ -25,9 +26,6 @@
     const pinnedCountries = ["JP", "US"];
     const countries = [...pinnedCountries, ...Object.keys(countryNames).filter((code) => !pinnedCountries.includes(code))];
     const allCountries = "all";
-    const minResults = 1;
-    const maxResults = 100;
-
     let visible = false;
     let filters = draftFilters(defaultFilters);
     let variant: DownloadVariant = $settings.variant;
@@ -36,9 +34,7 @@
     function draftFilters({ country, take, orderBy, sites }: ServerFilters) {
         return {
             country: country ?? allCountries,
-            take: Number.isFinite(take)
-                ? Math.min(maxResults, Math.max(minResults, Math.round(take)))
-                : defaultFilters.take,
+            take: normalizeResultCount(take, defaultFilters.take),
             orderBy,
             sites: [...sites],
         };
@@ -97,8 +93,8 @@
                     <Slider
                         input$id="server-result-count"
                         bind:value={filters.take}
-                        min={minResults}
-                        max={maxResults}
+                        min={minResultCount}
+                        max={maxResultCount}
                         step={1}
                         discrete
                     />
