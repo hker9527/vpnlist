@@ -88,11 +88,18 @@
 	<p>Choose a server, download its profile, then import it into OpenVPN and connect.</p>
 
 	<aside class="vpngate-notice" aria-label="About VPN Gate">
-		<a href="https://www.vpngate.net/en/about_overview.aspx">VPN Gate</a>
-		is a free University of Tsukuba research project with volunteer-run public servers.
-		Speed and availability vary. Your IP address and connection details are
-		<a href="https://www.vpngate.net/en/about_abuse.aspx">logged for at least three months</a>.
-		Don’t rely on it for anonymity.
+		<p>
+			<a href="https://www.vpngate.net/en/about_overview.aspx">VPN Gate</a>
+			is a free University of Tsukuba research project with volunteer-run public servers.
+			Speed and availability vary. VPN Gate logs your IP address and connection details
+			<a href="https://www.vpngate.net/en/about_abuse.aspx">for at least three months</a>.
+			Don’t rely on it for anonymity.
+		</p>
+		<p>
+			NasuVPN doesn’t log your VPN connections or traffic. We use Cloudflare to serve this website
+			and measure its usage and performance. Cloudflare may process your IP address and other
+			request data when you visit. See <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare’s Privacy Policy</a>.
+		</p>
 	</aside>
 
 	<div class="results-toolbar">
@@ -170,6 +177,14 @@
 		border-inline-start: 3px solid var(--mdc-theme-primary, #ab47bc);
 		padding-inline-start: 0.75rem;
 		font-size: 0.875rem;
+	}
+
+	.vpngate-notice p {
+		margin: 0;
+	}
+
+	.vpngate-notice p + p {
+		margin-block-start: 0.5rem;
 	}
 
 	.results-toolbar {
