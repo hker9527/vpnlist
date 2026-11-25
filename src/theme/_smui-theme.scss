@@ -3,7 +3,7 @@
 @use "@material/theme/color-palette";
 
 @use "@material/theme/index" as theme with (
-	$primary: color-palette.$purple-400,
+	$primary: #743d80,
 	$secondary: color-palette.$green-600,
 	$surface: color-palette.$grey-200,
 	$background: color-palette.$grey-200,

@@ -174,7 +174,7 @@
 	}
 
 	.vpngate-notice {
-		border-inline-start: 3px solid var(--mdc-theme-primary, #ab47bc);
+		border-inline-start: 3px solid var(--mdc-theme-primary, #743d80);
 		padding-inline-start: 0.75rem;
 		font-size: 0.875rem;
 	}
