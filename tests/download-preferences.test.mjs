@@ -1,5 +1,11 @@
 import { expect, test } from "bun:test";
-import { detectPlatform } from "../src/lib/downloadPreferences";
+import {
+    buildProfileDownloadUrl,
+    detectPlatform,
+    recommendedClients,
+    resolvePlatform,
+    shouldBlockIpv6,
+} from "../src/lib/downloadPreferences";
 import { Settings } from "../src/lib/LocalStorage";
 import { defaultSettings as previousDefaults } from "../src/lib/LocalStorage/migrations/002_save_download_option";
 import { defaultSettings, Migration, ShapeSchema } from "../src/lib/LocalStorage/migrations/003_download_preferences";
@@ -14,6 +20,36 @@ test.each([
     ["", 0, "other"],
 ])("detects %s with %i touch points as %s", (userAgent, maxTouchPoints, platform) => {
     expect(detectPlatform(userAgent, maxTouchPoints)).toBe(platform);
+});
+
+test("client recommendation follows the effective platform", () => {
+    expect(recommendedClients[resolvePlatform("auto", "ios")].name).toBe("OpenVPN Connect");
+    expect(recommendedClients[resolvePlatform("android", "ios")].name).toBe("OpenVPN for Android");
+    expect(recommendedClients[resolvePlatform("other", "ios")]).toBeNull();
+});
+
+test.each([
+    ["ios", false],
+    ["other", false],
+    ["android", true],
+    ["windows", true],
+    ["macos", true],
+    ["linux", true],
+])("defaults IPv6 blocking on %s to %s", (platform, blocked) => {
+    expect(shouldBlockIpv6(platform)).toBe(blocked);
+    expect(shouldBlockIpv6(platform, true)).toBe(true);
+    expect(shouldBlockIpv6(platform, false)).toBe(false);
+});
+
+test("profile URLs carry the IPv6 option without changing split or sites behavior", () => {
+    const host = "https://api.example.com";
+    const ip = "192.0.2.1";
+    const original = new URL(buildProfileDownloadUrl(host, ip, "ios", { variant: "beta", split: false }));
+    expect(original.pathname).toBe(`/api/server/${ip}/config`);
+    expect([...original.searchParams]).toEqual([["variant", "beta"], ["blockIpv6", "false"]]);
+
+    const split = new URL(buildProfileDownloadUrl(host, ip, "ios", { variant: "current", split: true, blockIpv6: true }));
+    expect([...split.searchParams]).toEqual([["variant", "current"], ["split", "true"], ["blockIpv6", "true"]]);
 });
 
 test("upgrades stored filters without activating the old placeholder split preference", () => {
@@ -72,5 +108,14 @@ test("already-current users do not see a new settings hint", () => {
     withStorage({ version: String(new Migration().version), settings: JSON.stringify(defaultSettings) }, () => {
         expect(new Settings().hasDownloadSettingsHint()).toBe(false);
         expect(new Settings().hasDownloadSettingsHint()).toBe(false);
+    });
+});
+
+test("existing settings use the platform default until an override is saved", () => {
+    withStorage({ version: String(new Migration().version), settings: JSON.stringify(defaultSettings) }, () => {
+        const settings = new Settings();
+        expect(settings.load().blockIpv6).toBeUndefined();
+        settings.save({ ...settings.load(), blockIpv6: false });
+        expect(new Settings().load().blockIpv6).toBe(false);
     });
 });

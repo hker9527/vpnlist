@@ -1,7 +1,7 @@
 import { derived, readable, writable } from "svelte/store";
 import { Settings } from "../LocalStorage";
 import type { Shape } from "../LocalStorage/migrations/latest";
-import { detectPlatform, type Platform } from "../downloadPreferences";
+import { detectPlatform, resolvePlatform, type Platform } from "../downloadPreferences";
 
 function createSettingsStore() {
     const settingsManager = new Settings();
@@ -37,5 +37,5 @@ export const detectedPlatform = readable<Platform>("other", (set) => {
 });
 
 export const selectedPlatform = derived([settings, detectedPlatform], ([$settings, $detectedPlatform]) =>
-    $settings.platform === "auto" ? $detectedPlatform : $settings.platform
+    resolvePlatform($settings.platform, $detectedPlatform)
 );

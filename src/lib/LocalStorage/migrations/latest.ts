@@ -1,7 +1,11 @@
+import { z } from "zod";
 import * as Latest from "./003_download_preferences";
 
-export const ShapeSchema = Latest.ShapeSchema;
-export type Shape = Latest.Shape;
+// An absent override uses the platform default, including for existing settings.
+export const ShapeSchema = Latest.ShapeSchema.extend({
+    blockIpv6: z.boolean().optional(),
+});
+export type Shape = z.infer<typeof ShapeSchema>;
 export const defaultSettings: Shape = Latest.defaultSettings;
 
 export class Migration extends Latest.Migration {}

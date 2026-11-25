@@ -15,6 +15,9 @@
         downloadVariants,
         platformLabels,
         platformOptions,
+        recommendedClients,
+        resolvePlatform,
+        shouldBlockIpv6,
         type DownloadVariant,
         type PlatformPreference,
     } from "@lib/downloadPreferences";
@@ -30,7 +33,17 @@
     let filters = draftFilters(defaultFilters);
     let variant: DownloadVariant = $settings.variant;
     let platform: PlatformPreference = $settings.platform;
+    let previousPlatform = platform;
+    let blockIpv6 = shouldBlockIpv6(resolvePlatform(platform, $detectedPlatform), $settings.blockIpv6);
     let split = $settings.split;
+
+    $: downloadPlatform = resolvePlatform(platform, $detectedPlatform);
+    $: recommendedClient = recommendedClients[downloadPlatform];
+    $: if (platform !== previousPlatform) {
+        previousPlatform = platform;
+        blockIpv6 = shouldBlockIpv6(downloadPlatform);
+    }
+
     function draftFilters({ country, take, orderBy, sites }: ServerFilters) {
         return {
             country: country ?? allCountries,
@@ -43,6 +56,8 @@
     export function open() {
         filters = draftFilters($settings);
         ({ variant, platform, split } = $settings);
+        previousPlatform = platform;
+        blockIpv6 = shouldBlockIpv6(resolvePlatform(platform, $detectedPlatform), $settings.blockIpv6);
         visible = true;
     }
 
@@ -53,6 +68,7 @@
             country: filters.country === allCountries ? null : filters.country,
             variant,
             platform,
+            blockIpv6: blockIpv6 === shouldBlockIpv6(downloadPlatform) ? undefined : blockIpv6,
             split,
         }));
     }
@@ -138,21 +154,47 @@
                     {/each}
                 </Select>
 
-                <Select
-                    variant="outlined"
-                    bind:value={platform}
-                    label="Platform"
-                    menu$fixed
-                    menu$fullWidth={false}
-                >
-                    {#each platformOptions as option}
-                        <Option value={option}>
-                            {option === "auto"
-                                ? `Automatic (${platformLabels[$detectedPlatform]})`
-                                : platformLabels[option]}
-                        </Option>
-                    {/each}
-                </Select>
+                <div class="setting-with-help">
+                    <Select
+                        variant="outlined"
+                        bind:value={platform}
+                        label="Platform"
+                        menu$fixed
+                        menu$fullWidth={false}
+                    >
+                        {#each platformOptions as option}
+                            <Option value={option}>
+                                {option === "auto"
+                                    ? `Automatic (${platformLabels[$detectedPlatform]})`
+                                    : platformLabels[option]}
+                            </Option>
+                        {/each}
+                    </Select>
+                    {#if recommendedClient}
+                        <small>
+                            Recommended client:
+                            <a href={recommendedClient.url} target="_blank" rel="noopener noreferrer">
+                                {recommendedClient.name}
+                            </a>
+                        </small>
+                    {:else}
+                        <small>No recommended client for this platform.</small>
+                    {/if}
+                </div>
+
+                <div class="setting-with-help">
+                    <FormField>
+                        <Switch
+                            bind:checked={blockIpv6}
+                            aria-labelledby="ipv6-block-label"
+                            aria-describedby="ipv6-block-help"
+                        />
+                        <span id="ipv6-block-label" slot="label">Block IPv6 in profile</span>
+                    </FormField>
+                    <small id="ipv6-block-help">
+                        If your client rejects the profile, try turning it off.
+                    </small>
+                </div>
 
                 <FormField>
                     <Switch bind:checked={split} />
@@ -179,6 +221,11 @@
     .settings-group {
         display: grid;
         gap: 1rem;
+    }
+
+    .setting-with-help {
+        display: grid;
+        gap: 0.5rem;
     }
 
     .result-count-label {

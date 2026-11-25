@@ -1,5 +1,6 @@
 <script lang="ts">
     import { HOST } from "@lib/const";
+    import { buildProfileDownloadUrl } from "@lib/downloadPreferences";
     import {
         ZServerAPIResponse,
         type ServerResult,
@@ -71,15 +72,7 @@
         }
     };
 
-    let downloadLink: string;
-    $: {
-        const url = new URL(`${HOST}/api/server/${result.ip}/config`);
-        url.searchParams.set("variant", $settings.variant);
-        if ($settings.split) {
-            url.searchParams.set("split", "true");
-        }
-        downloadLink = url.toString();
-    }
+    $: downloadLink = buildProfileDownloadUrl(HOST, result.ip, $selectedPlatform, $settings);
 
     const initMap = async () => {
         if (map) return;
@@ -334,7 +327,7 @@
                             variant="raised"
                         >
                             <ButtonIcon class="material-icons" aria-hidden="true">android</ButtonIcon>
-                            Open in app
+                            Open in OpenVPN Connect
                         </Button>
                     {/if}
                 </div>
