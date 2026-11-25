@@ -318,16 +318,17 @@
                         on:click={() => snackbar.open()}
                         variant="raised"
                     >
+                        <ButtonIcon class="material-icons" aria-hidden="true">file_download</ButtonIcon>
                         Download
                     </Button>
-                    {#if $selectedPlatform === "android"}
+                    {#if $selectedPlatform === "android" || $selectedPlatform === "ios"}
                         <Button
                             class="open-in-app"
                             href={`openvpn://import-profile/${downloadLink}`}
                             variant="raised"
                         >
-                            <ButtonIcon class="material-icons" aria-hidden="true">android</ButtonIcon>
-                            Open in OpenVPN Connect
+                            <ButtonIcon class="material-icons" aria-hidden="true">smartphone</ButtonIcon>
+                            Open in app
                         </Button>
                     {/if}
                 </div>
@@ -431,8 +432,12 @@
         gap: 0.5rem;
 
         :global(.mdc-button--raised.open-in-app) {
-            background-color: #3ddc84;
-            color: #092719;
+            background-color: #31588d;
+            color: #fff;
+
+            @media (prefers-color-scheme: dark) {
+                background-color: #416aa1;
+            }
         }
     }
 
